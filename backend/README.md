@@ -26,6 +26,12 @@ Un webhook sencillo desarrollado en Java con Spring Boot que se conecta con la A
    - Copia la clave
 
 2. **Configurar la aplicación:**
+   - Crea un archivo `.env` en la raíz del proyecto
+   - Agrega tu clave de API de OpenAI:
+     ```properties
+     OPENAI_API_KEY=tu-clave-real-aqui
+     ```
+   - El archivo `application.properties` ya está configurado para usar esta variable de entorno
    - Abre el archivo `src/main/resources/application.properties`
    - Reemplaza `tu-api-key-aqui` con tu clave real de OpenAI:
      ```properties

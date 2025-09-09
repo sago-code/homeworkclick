@@ -54,12 +54,12 @@ npm
 1. 1.
    Backend
    
-   ```
-   cd backend
-   # Configurar application.properties con 
-   tu API key de OpenAI
-   mvn clean install
-   mvn spring-boot:run
+   ```bash
+   cd backend
+   # Crear archivo .env y agregar tu API key de OpenAI
+   echo "OPENAI_API_KEY=tu-clave-api-aqui" > .env
+   mvn clean install
+   mvn spring-boot:run
    ```
 2. 2.
    Frontend
