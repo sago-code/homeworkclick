@@ -103,6 +103,14 @@ body {
         padding: 20px 5px;
         box-sizing: border-box;
     }
+    .entrar-btn {
+    background-color: #4CAF50;
+    margin-top: 10px;
+    }
+
+    .entrar-btn:hover {
+        background-color: #45a049;
+    }
 
 
 }

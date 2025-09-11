@@ -40,4 +40,8 @@ document.addEventListener('DOMContentLoaded', function () {
             mensajeExito.textContent = 'El ingreso se generó de manera exitosa';
         });
     }
+     btnEntrar.addEventListener('click', function() {
+        // Redireccionar a chatbot.html
+        window.location.href = 'src/pages/common/login/chatbot.html';
+    });
 });
