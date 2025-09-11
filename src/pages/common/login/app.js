@@ -2052,7 +2052,7 @@ generatePdfContent() {
                                 <th>Tema</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody> 
                             <tr>
                                 <td>${new Date().toLocaleDateString('es-ES')}</td>
                                 <td>${this.state.userName || "Usuario"}</td>
