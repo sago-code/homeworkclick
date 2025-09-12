@@ -14,6 +14,7 @@ del backend
 │   └── pom.xml             # Dependencias 
 Maven
 ├── src/                    # Frontend
+    ├── main.js             # Ejecutor y enrutamiento principal
 │   ├── assets/             # Recursos 
 estáticos
 │   │   └── images/        # Imágenes
@@ -22,8 +23,6 @@ aplicación
 │       └── common/         # Componentes 
 comunes
 ├── index.html              # Página 
-principal
-├── index.js                # Servidor de 
 desarrollo
 └── package.json            # Dependencias 
 npm
@@ -43,7 +42,7 @@ npm
 ### Frontend
 - HTML5
 - CSS3
-- JavaScript Vanilla
+- Vite - Vanilla.js
 - Node.js para desarrollo
 ## Requisitos Previos 📋
 - Java 17 o superior
@@ -54,12 +53,12 @@ npm
 1. 1.
    Backend
    
-   ```bash
-   cd backend
-   # Crear archivo .env y agregar tu API key de OpenAI
-   echo "OPENAI_API_KEY=tu-clave-api-aqui" > .env
-   mvn clean install
-   mvn spring-boot:run
+   ```
+   cd backend
+   # Configurar application.properties con 
+   tu API key de OpenAI
+   mvn clean install
+   mvn spring-boot:run
    ```
 2. 2.
    Frontend
@@ -70,7 +69,7 @@ npm
    ```
 ## Uso 🚀
 1. 1.
-   Accede a http://localhost:3000
+   Accede a http://localhost:5173
 2. 2.
    Inicia sesión con tus credenciales
 3. 3.
