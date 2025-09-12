@@ -1,19 +1,17 @@
 {
   "name": "homeworkclick",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "private": true,
+  "version": "0.0.0",
   "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^7.1.2"
+  },
   "dependencies": {
-    "axios": "^1.11.0",
-    "firebase": "^12.2.1",
-    "open": "^10.2.0"
+    "axios": "^1.12.0"
   }
 }
