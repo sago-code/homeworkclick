@@ -68,6 +68,7 @@ export default async function Login() {
 
             try {
                 const resultado = await registrarUsuario(datosUsuario);
+                console.log('Resultado del registro:', resultado.id);
                 if (resultado && resultado.id) {
                     mensajeExitoRegistro.style.color = 'green';
                     mensajeExitoRegistro.textContent = 'Usuario registrado con éxito ✅';

@@ -20,6 +20,8 @@ public class UsuarioService {
     public Usuario createUser(UsuarioRequest request) {
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("El email ya está registrado");
+        } else if (usuarioRepository.existsByPhone(request.getPhone())) {
+            throw new RuntimeException("El teléfono ya está registrado");
         }
 
         Usuario usuario = new Usuario();
