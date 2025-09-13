@@ -1,5 +1,6 @@
+import './styles.css'; // Importar CSS específico del chatbot
 
-class ChatbotApp {
+export default class ChatbotApp {
     constructor() {
         // Configuración de la aplicación
         this.config = {
@@ -2160,7 +2161,3 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🎯 DOM cargado - Inicializando aplicación con backend...');
     chatbotApp = new ChatbotApp();
 });
-
-
-
-

@@ -1,5 +1,6 @@
 import './login.css';
 import axios from 'axios';
+import router, { navigateTo } from '../../main.js';
 
 export default async function Login() {
     const contraseñaInput = document.getElementById('contraseña');
@@ -10,6 +11,8 @@ export default async function Login() {
     const btnRegistrarse = document.getElementById('btn-registrarse');
     const btnVolverLogin = document.getElementById('btn-volver-login');
     const formRegistro = document.getElementById('form-registro');
+    const formUsuario = document.getElementById('form-login');
+
     const mensajeExitoRegistro = document.getElementById('mensaje-exito-registro');
 
     // 🔹 Validación de contraseña
@@ -40,15 +43,7 @@ export default async function Login() {
             }
         });
     }
-
-    // 🔹 Login
-    if (form) {
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            mensajeExito.textContent = 'El ingreso se generó de manera exitosa';
-        });
-    }
-
+    
     // 🔹 Cambiar entre login y registro
     if (btnRegistrarse) btnRegistrarse.addEventListener('click', activarLoginForm);
     if (btnVolverLogin) btnVolverLogin.addEventListener('click', activarLoginForm);
@@ -85,6 +80,45 @@ export default async function Login() {
             }
         });
     }
+
+    if (formUsuario) {
+        console.log(formUsuario, 'formUsuario'); // Para verificar que encontró el form
+
+        formUsuario.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const datosLogin = {
+                email: document.getElementById('correo').value,
+                password: document.getElementById('contraseña').value
+            };
+
+            console.log('Datos de login:', datosLogin);
+
+            try {
+                const resultado = await loginUsuario(datosLogin);
+                console.log('Resultado del login:', resultado);
+
+                if (resultado && resultado.id) {
+                    mensajeExito.style.color = 'green';
+                    mensajeExito.textContent = 'Usuario logueado con éxito ✅';
+                    sessionStorage.setItem('user', JSON.stringify(resultado));
+                    localStorage.setItem('user', JSON.stringify(resultado));
+
+                    console.log("👉 Navegando a /chatbot");
+                    navigateTo('/chatbot');
+                    router();
+                } else {
+                    mensajeExito.style.color = 'red';
+                    mensajeExito.textContent = resultado?.message || 'Error al iniciar sesión ❌';
+                }
+            } catch (error) {
+                console.error('Error al iniciar sesión:', error);
+                mensajeExito.style.color = 'red';
+                mensajeExito.textContent = 'Error al iniciar sesión ❌';
+            }
+        });
+    }
+
 
     function activarLoginForm() {
         const loginCard = document.getElementById('card-login');
@@ -123,4 +157,28 @@ export default async function Login() {
             throw error;
         }
     }
+
+    async function loginUsuario(datosLogin) {
+        try {
+            const response = await axios.post(
+                'http://localhost:8080/api/usuarios/login',
+                datosLogin,
+                { headers: { 'Content-Type': 'application/json' } }
+            );
+
+            const data = response.data;
+
+            // Normalizamos lo que nos interesa
+            return {
+                id: data.usuario.id,
+                email: data.usuario.email,
+                nombre: data.usuario.first_name + " " + data.usuario.last_name,
+                token: data.token
+            };
+        } catch (error) {
+            console.error('Error al iniciar sesión:', error);
+            throw error;
+        }
+    }
+
 }

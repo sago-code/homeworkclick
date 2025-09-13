@@ -1,6 +1,8 @@
 import './style.css'; // Importar CSS global
 import Login from './pages/login/login.js';
 import loginHTML from './pages/login/login.html?raw';
+import ChatbotApp from './pages/chatbot/app.js';
+import chatbotHTML from './pages/chatbot/chatbot.html?raw';
 
 // Función para navegar
 export function navigateTo(url) {
@@ -11,18 +13,22 @@ export function navigateTo(url) {
 // Router
 export default async function router() {
   const path = window.location.pathname;
-  const container = document.getElementById('app'); // tu contenedor principal
+  const container = document.getElementById('app');
+
+  console.log("👉 Router cargado con path:", path); // DEBUG
 
   if (path === '/' || path === '/login') {
-    // Si es "/" o "/login", cargamos login
     container.innerHTML = loginHTML;
-    Login(); // Inicializa la lógica del login
-    if (path === '/') {
-      // Redirigir a /login en el URL si estamos en "/"
-      history.replaceState(null, null, '/login');
-    }
+    Login();
+    if (path === '/') history.replaceState(null, null, '/login');
+  } else if (path === '/chatbot') {
+    container.innerHTML = chatbotHTML;
+    new ChatbotApp();
+  } else {
+    console.warn("Ruta no encontrada:", path);
   }
 }
+
 
 // Cuando carga la página
 document.addEventListener('DOMContentLoaded', () => {

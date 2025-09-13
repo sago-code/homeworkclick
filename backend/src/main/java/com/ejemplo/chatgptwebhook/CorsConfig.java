@@ -13,10 +13,11 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:5173") // 👈 aquí va tu frontend
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                registry.addMapping("/**") // 👈 Acepta CORS en todos los endpoints
+                        .allowedOrigins("http://localhost:5173") // 👈 tu frontend (Vite)
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")
+                        .exposedHeaders("Authorization") // 👈 si usas JWT en headers
                         .allowCredentials(true);
             }
         };

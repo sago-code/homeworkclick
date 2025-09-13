@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Servicio para gestionar las opciones del menú principal 
+ * Servicio para gestionar las opciones del menú principal (versión web únicamente)
  */
 @Service
 public class MenuService {
