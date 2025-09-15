@@ -34,7 +34,10 @@ export default class ChatbotApp {
         debugContent: document.getElementById('debugContent'),
   
         // Notificaciones
-        toast: document.getElementById('toast')
+        toast: document.getElementById('toast'),
+
+        // Botón para generar PDF
+        generatePdfBtn: document.getElementById('generatePdfBtn')
       };
   
       // --- Estado ---
@@ -100,6 +103,9 @@ export default class ChatbotApp {
 
       // Delegación de eventos en el área de mensajes (para tarjetas del menú)
       this.elements.chatMessages?.addEventListener('click', (e) => this.handleMenuCardClick(e));
+
+      // Evento para generar PDF de chats
+        this.elements.generatePdfBtn.addEventListener('click', this.handleGeneratePdf.bind(this));
 
       // Errores globales
       window.addEventListener('error', (event) => {
@@ -197,6 +203,8 @@ export default class ChatbotApp {
       const html = this.createMenuMessage(menuData);
       this.addBotMessage(html, true);
     }
+
+    
   
     createMenuMessage(menuData) {
       const iconos = {
@@ -265,6 +273,453 @@ export default class ChatbotApp {
       };
       return d[id] || 'Acción del menú';
     }
+
+    generatePdfContent() {
+        const fechaActual = new Date().toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const mesActual = new Date().toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long'
+        });
+        
+        // Datos de ejemplo para el resumen
+        const resumenChats = {
+            totalChats: 24,
+            chatsProyectos: 8,
+            chatsTareas: 12,
+            chatsConsultas: 4,
+            usuarioMasActivo: this.state.userName || "Usuario Ejemplo",
+            proyectoMasComentado: "Sistema de Gestión de Tareas",
+            tendenciaMensual: "+15% respecto al mes anterior",
+            eficienciaResolucion: "87%",
+            tiempoPromedioRespuesta: "12 minutos"
+        };
+        
+        return `
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Resumen Mensual de Chats - HomeworkClick</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+                    
+                    body {
+                        font-family: 'Roboto', sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        color: #2c3e50;
+                        background-color: #f8f9fa;
+                        line-height: 1.6;
+                    }
+                    .container {
+                        max-width: 210mm;
+                        min-height: 297mm;
+                        margin: 0 auto;
+                        background: white;
+                        padding: 20mm;
+                        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    }
+                    .header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border-bottom: 3px solid #4CAF50;
+                        padding-bottom: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .company-info {
+                        flex: 2;
+                    }
+                    .company-info h1 {
+                        color: #2c3e50;
+                        margin: 0 0 5px 0;
+                        font-size: 28px;
+                        font-weight: 700;
+                    }
+                    .company-info p {
+                        color: #7f8c8d;
+                        margin: 0;
+                        font-size: 14px;
+                    }
+                    .report-info {
+                        flex: 1;
+                        text-align: right;
+                    }
+                    .report-info .logo {
+                        font-size: 40px;
+                        margin-bottom: 10px;
+                    }
+                    .report-info p {
+                        margin: 3px 0;
+                        font-size: 13px;
+                        color: #7f8c8d;
+                    }
+                    .document-title {
+                        text-align: center;
+                        margin: 30px 0;
+                        padding: 15px;
+                        background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+                        color: white;
+                        border-radius: 5px;
+                    }
+                    .document-title h2 {
+                        margin: 0;
+                        font-size: 22px;
+                        font-weight: 500;
+                        letter-spacing: 1px;
+                    }
+                    .section {
+                        margin-bottom: 25px;
+                        page-break-inside: avoid;
+                    }
+                    .section h3 {
+                        color: #2c3e50;
+                        border-bottom: 2px solid #ecf0f1;
+                        padding-bottom: 8px;
+                        margin-top: 0;
+                        font-size: 18px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    .stats-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 15px;
+                        margin-bottom: 20px;
+                    }
+                    .stat-card {
+                        background: #fff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+                        border-left: 5px solid #4CAF50;
+                        text-align: center;
+                        transition: transform 0.2s;
+                    }
+                    .stat-card:hover {
+                        transform: translateY(-3px);
+                    }
+                    .stat-number {
+                        font-size: 32px;
+                        font-weight: 700;
+                        color: #2c3e50;
+                        margin-bottom: 5px;
+                    }
+                    .stat-label {
+                        color: #7f8c8d;
+                        font-size: 14px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+                    .highlight-box {
+                        background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+                        padding: 20px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        border-left: 5px solid #2E7D32;
+                    }
+                    .highlight-box strong {
+                        color: #2E7D32;
+                    }
+                    .metrics-grid {
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 15px;
+                        margin: 20px 0;
+                    }
+                    .metric-item {
+                        padding: 15px;
+                        background: #f8f9fa;
+                        border-radius: 5px;
+                        border-left: 4px solid #4CAF50;
+                    }
+                    .metric-item strong {
+                        color: #2c3e50;
+                    }
+                    .chat-list {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 20px 0;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                    }
+                    .chat-list th {
+                        background-color: #4CAF50;
+                        color: white;
+                        padding: 12px 15px;
+                        text-align: left;
+                        font-weight: 500;
+                        text-transform: uppercase;
+                        font-size: 13px;
+                        letter-spacing: 0.5px;
+                    }
+                    .chat-list td {
+                        border-bottom: 1px solid #ecf0f1;
+                        padding: 12px 15px;
+                        font-size: 14px;
+                    }
+                    .chat-list tr:nth-child(even) {
+                        background-color: #f9f9f9;
+                    }
+                    .chat-list tr:hover {
+                        background-color: #f1f8e9;
+                    }
+                    .recommendations {
+                        background: #fff;
+                        padding: 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+                        margin: 20px 0;
+                    }
+                    .recommendations ul {
+                        padding-left: 20px;
+                    }
+                    .recommendations li {
+                        margin-bottom: 10px;
+                        padding-left: 5px;
+                    }
+                    .recommendations li::marker {
+                        color: #4CAF50;
+                    }
+                    .footer {
+                        text-align: center;
+                        margin-top: 40px;
+                        color: #7f8c8d;
+                        font-size: 12px;
+                        border-top: 1px solid #ecf0f1;
+                        padding-top: 20px;
+                    }
+                    .footer p {
+                        margin: 5px 0;
+                    }
+                    .confidential {
+                        font-style: italic;
+                    }
+                    .signature-area {
+                        margin-top: 50px;
+                        border-top: 1px dashed #ccc;
+                        padding-top: 20px;
+                        text-align: right;
+                    }
+                    .signature-line {
+                        margin-top: 40px;
+                        border-top: 1px solid #7f8c8d;
+                        width: 200px;
+                        display: inline-block;
+                    }
+                    
+                    /* Estilos específicos para impresión */
+                    @media print {
+                        @page {
+                            margin: 0;
+                            size: A4 portrait;
+                        }
+                        
+                        body {
+                            background: white;
+                            padding: 0;
+                            margin: 0;
+                            -webkit-print-color-adjust: exact;
+                            print-color-adjust: exact;
+                        }
+                        
+                        .container {
+                            box-shadow: none;
+                            padding: 15mm;
+                            max-width: 100%;
+                            min-height: auto;
+                            margin: 0;
+                        }
+                        
+                        .no-print {
+                            display: none;
+                        }
+                        
+                        .stat-card:hover {
+                            transform: none;
+                        }
+                        
+                        .chat-list tr:hover {
+                            background-color: transparent;
+                        }
+                        
+                        /* Eliminar encabezados y pies de página del navegador */
+                        /* Para Chrome, Safari y Edge */
+                        @page {
+                            margin: 0;
+                        }
+                        
+                        body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        
+                        /* Para Firefox */
+                        body, html {
+                            width: 210mm;
+                            height: 297mm;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        
+                        /* Ocultar elementos no deseados en impresión */
+                        .container::before, .container::after {
+                            content: none;
+                        }
+                    }
+                    
+                    .page-break {
+                        page-break-before: always;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="company-info">
+                            <h1>HomeworkClick App</h1>
+                            <p>Sistema de Gestión de Proyectos Inteligente</p>
+                        </div>
+                        <div class="report-info">
+                            <div class="logo">🤖</div>
+                            <p><strong>Reporte:</strong> Resumen Mensual de Chats</p>
+                            <p><strong>Generado el:</strong> ${fechaActual}</p>
+                            <p><strong>Período:</strong> ${mesActual}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="document-title">
+                        <h2>Resumen de Actividad de Chat - ${mesActual}</h2>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Estadísticas Generales</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-number">${resumenChats.totalChats}</div>
+                                <div class="stat-label">Total de Chats</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${resumenChats.chatsProyectos}</div>
+                                <div class="stat-label">Chats sobre Proyectos</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${resumenChats.chatsTareas}</div>
+                                <div class="stat-label">Chats sobre Tareas</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">${resumenChats.chatsConsultas}</div>
+                                <div class="stat-label">Consultas Generales</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <strong>Usuario más activo:</strong> ${resumenChats.usuarioMasActivo}
+                            </div>
+                            <div class="metric-item">
+                                <strong>Eficiencia en resolución:</strong> ${resumenChats.eficienciaResolucion}
+                            </div>
+                            <div class="metric-item">
+                                <strong>Proyecto más comentado:</strong> ${resumenChats.proyectoMasComentado}
+                            </div>
+                            <div class="metric-item">
+                                <strong>Tiempo promedio de respuesta:</strong> ${resumenChats.tiempoPromedioRespuesta}
+                            </div>
+                        </div>
+                        
+                        <div class="highlight-box">
+                            <strong>📈 Tendencia del mes:</strong> ${resumenChats.tendenciaMensual}
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Resumen de Actividad</h3>
+                        
+                        <h4>Chats Recientes</h4>
+                        <table class="chat-list">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Tipo</th>
+                                    <th>Tema</th>
+                                </tr>
+                            </thead>
+                            <tbody> 
+                                <tr>
+                                    <td>${new Date().toLocaleDateString('es-ES')}</td>
+                                    <td>${this.state.userName || "Usuario"}</td>
+                                    <td><span style="color: #4CAF50;">●</span> Proyecto</td>
+                                    <td>Nuevo sistema de gestión</td>
+                                </tr>
+                                <tr>
+                                    <td>${new Date(Date.now() - 2 * 86400000).toLocaleDateString('es-ES')}</td>
+                                    <td>${this.state.userName || "Usuario"}</td>
+                                    <td><span style="color: #2196F3;">●</span> Tarea</td>
+                                    <td>Implementación de API</td>
+                                </tr>
+                                <tr>
+                                    <td>${new Date(Date.now() - 5 * 86400000).toLocaleDateString('es-ES')}</td>
+                                    <td>${this.state.userName || "Usuario"}</td>
+                                    <td><span style="color: #FF9800;">●</span> Consulta</td>
+                                    <td>Configuración del sistema</td>
+                                </tr>
+                                <tr>
+                                    <td>${new Date(Date.now() - 7 * 86400000).toLocaleDateString('es-ES')}</td>
+                                    <td>${this.state.userName || "Usuario"}</td>
+                                    <td><span style="color: #4CAF50;">●</span> Proyecto</td>
+                                    <td>Análisis de requerimientos</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Análisis y Recomendaciones</h3>
+                        <div class="recommendations">
+                            <p>Basado en el análisis de la actividad del mes de ${mesActual.split(' ')[0]}, nuestro sistema recomienda:</p>
+                            <ul>
+                                <li><strong>Focalizar esfuerzos</strong> en el proyecto "${resumenChats.proyectoMasComentado}" que ha generado la mayor cantidad de consultas</li>
+                                <li><strong>Revisar las tareas pendientes</strong> del último mes y priorizar su finalización</li>
+                                <li><strong>Programar una revisión de progreso</strong> para la próxima semana con el equipo de desarrollo</li>
+                                <li><strong>Optimizar los flujos de trabajo</strong> para reducir el tiempo de respuesta en consultas técnicas</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="signature-area">
+                        <p>Documento generado automáticamente por el Sistema HomeworkClick</p>
+                        <div class="signature-line"></div>
+                        <p>Firma del Responsable</p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>HomeworkClick App - Sistema Inteligente de Gestión de Proyectos</p>
+                        <p>© ${new Date().getFullYear()} - Todos los derechos reservados</p>
+                        <p class="confidential">Este documento es confidencial y para uso exclusivo del destinatario</p>
+                    </div>
+                </div>
+                
+                <script>
+                    // Script para asegurar que se imprima correctamente
+                    window.onload = function() {
+                        // Forzar el modo de impresión después de cargar
+                        setTimeout(function() {
+                            window.print();
+                        }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+    }
   
     handleMenuCardClick(event) {
       const card = event.target.closest('.menu-option-card');
@@ -290,6 +745,38 @@ export default class ChatbotApp {
       if (optionId === 2) this.state.waitingForNewTask = true; // se ajustará tras respuesta
   
       this.processMenuAction(action, description, optionId);
+    }
+
+    handleGeneratePdf() {
+        console.log('📄 Generando resumen PDF...');
+        
+        try {
+
+            const pdfContent = this.generatePdfContent();
+            
+
+            const pdfWindow = window.open('', '_blank', 'width=800,height=600');
+            
+            if (pdfWindow) {
+                pdfWindow.document.write(pdfContent);
+                pdfWindow.document.close();
+                
+
+                pdfWindow.onload = function() {
+                    setTimeout(() => {
+                        pdfWindow.print();
+                    }, 250);
+                };
+                
+                this.showToast('PDF generado correctamente', 'success');
+            } else {
+                throw new Error('No se pudo abrir la ventana para el PDF. Verifica los bloqueadores de ventanas emergentes.');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error generando PDF:', error);
+            this.showToast('Error al generar el PDF: ' + error.message, 'error');
+        }
     }
   
     async processMenuAction(action, description, optionId) {
@@ -653,6 +1140,8 @@ export default class ChatbotApp {
     }
   
   }
+
+  
   
   // ===============================
   // Inicialización global
