@@ -3,6 +3,14 @@ import axios from 'axios';
 import router, { navigateTo } from '../../main.js';
 
 export default async function Login() {
+    // Verificar si hay datos de usuario en el almacenamiento
+    const userInStorage = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if (userInStorage) {
+        console.log("👉 Usuario encontrado en almacenamiento, redirigiendo a /chatbot");
+        navigateTo('/chatbot');
+        router();
+        return;
+    }
     const contraseñaInput = document.getElementById('contraseña');
     const barra = document.getElementById('fuerza-contraseña');
     const mensaje = document.getElementById('mensaje-contraseña');

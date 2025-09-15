@@ -26,7 +26,7 @@ public class UsuarioController {
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@RequestBody UsuarioRequest request) {
         try {
-            Usuario usuario = usuarioService.createUser(request);
+            Usuario usuario = usuarioService.registrarUsuario(request);
             return ResponseEntity.ok(usuario);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -36,7 +36,11 @@ public class UsuarioController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUsuario(@RequestBody LoginRequest request) {
         try {
-            Usuario usuario = usuarioService.authenticateUser(request.getEmail(), request.getPassword());
+            Usuario usuario = usuarioService.autenticarUsuario(request.getEmail(), request.getPassword());
+            
+            if (usuario == null) {
+                return ResponseEntity.badRequest().body("Credenciales inválidas");
+            }
             
             // Generar token JWT
             String token = jwtUtil.generateToken(usuario.getEmail());

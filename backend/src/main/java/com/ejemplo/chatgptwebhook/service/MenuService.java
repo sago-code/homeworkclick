@@ -2,6 +2,9 @@ package com.ejemplo.chatgptwebhook.service;
 
 import com.ejemplo.chatgptwebhook.model.MenuOption;
 import com.ejemplo.chatgptwebhook.model.MenuResponse;
+import com.ejemplo.chatgptwebhook.datastructures.TablaHash;
+import com.ejemplo.chatgptwebhook.datastructures.Grafo;
+import com.ejemplo.chatgptwebhook.datastructures.ListaEnlazada;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +31,14 @@ public class MenuService {
     
     // Mapa para almacenar el contexto del proyecto por sesión
     private final Map<String, String> contextoyProyectoSesion = new ConcurrentHashMap<>();
-    private final Map<String, String> nombreProyectoSesion = new ConcurrentHashMap<>();
-    private final Map<String, String> tareasProyectoSesion = new ConcurrentHashMap<>();
-    private final Map<String, Set<Integer>> tareasCompletadasSesion = new ConcurrentHashMap<>();
+    
+    // Usando estructuras de datos personalizadas
+    private final TablaHash<String, String> nombreProyectoSesion = new TablaHash<>();
+    private final TablaHash<String, String> tareasProyectoSesion = new TablaHash<>();
+    private final TablaHash<String, Set<Integer>> tareasCompletadasSesion = new TablaHash<>();
+    
+    // Grafo para relaciones entre proyectos
+    private final Grafo<String> relacionesProyectos = new Grafo<>();
     
     // Inyección del servicio de ChatGPT
     @Autowired
