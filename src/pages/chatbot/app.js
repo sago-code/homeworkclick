@@ -1,4 +1,4 @@
-import './styles.css'; // Importar CSS específico del chatbot
+import './chatbot.css'; // Importar CSS específico del chatbot
 
 export default class ChatbotApp {
     constructor() {

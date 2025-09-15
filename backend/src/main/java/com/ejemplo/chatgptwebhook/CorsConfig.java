@@ -13,7 +13,7 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // 👈 Acepta CORS en todos los endpoints
+                registry.addMapping("*/*") // 👈 Acepta CORS en todos los endpoints
                         .allowedOrigins("http://localhost:5173") // 👈 tu frontend (Vite)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")

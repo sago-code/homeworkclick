@@ -1,171 +1,59 @@
-<!-- 
-    FRONTEND PARA CHATBOT CON BACKEND SPRING BOOT
-    =============================================
-    
-    CÓMO USAR:
-    1. Asegúrate de que el backend esté ejecutándose en http://localhost:8080
-    2. Abre este archivo index.html en tu navegador (o sirve con Live Server)
-    3. Se abrirá automáticamente un modal solicitando tu nombre y fecha
-    4. Completa los campos y haz clic en "Aceptar"
-    5. El chatbot aparecerá listo para conversar usando el webhook de IA
-    
-    ENDPOINTS BACKEND:
-    - POST http://localhost:8080/webhook/chat - Chat webhook
-    - GET http://localhost:8080/api/chat/health - Health check
-    - GET http://localhost:8080/api/config/status - Estado de configuración
-    
-    CARACTERÍSTICAS:
-    - Modal inicial con validaciones
-    - Chatbot integrado con webhook de IA
-    - Manejo de errores con toasts
-    - Historial de conversación
-    - Indicadores de carga
-    - Accesibilidad completa
--->
-    <!-- Toast para notificaciones -->
-    <div id="toast" class="toast" aria-live="polite"></div>
+<img src="/src/assets/images/imagen1.png" alt="" class="bg-side bg-left" aria-hidden="true">
+<img src="/src/assets/images/imagen2 copy.png" alt="" class="bg-side bg-right" aria-hidden="true">
 
-    <!-- Overlay del modal -->
-    <div id="overlay" class="overlay" aria-hidden="true"></div>
+<div id="toast" class="toast" aria-live="polite"></div>
 
-    <!-- Modal inicial -->
-    <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
-        <div class="modal-content">
-            <h2 id="modal-title">¡Hola! 👋</h2>
-            <p>Para comenzar a chatear, necesito conocerte un poco mejor:</p>
-
-            <form id="modalForm" novalidate>
-                <div class="form-group">
-                    <label for="nameInput">Tu nombre:</label>
-                    <input type="text" id="nameInput" name="name" placeholder="Introduce tu nombre" required
-                        aria-describedby="nameError">
-                    <span id="nameError" class="error-message" aria-live="polite"></span>
-                </div>
-
-                <div class="form-group">
-                    <label for="dateInput">Fecha actual:</label>
-                    <input type="date" id="dateInput" name="date" required aria-describedby="dateError">
-                    <span id="dateError" class="error-message" aria-live="polite"></span>
-                </div>
-
-                <div class="modal-buttons">
-                    <button type="button" id="cancelBtn" class="btn btn-cancel">
-                        Cancelar
-                    </button>
-                    <button type="submit" id="acceptBtn" class="btn btn-primary" disabled>
-                        Aceptar
-                    </button>
-                </div>
-            </form>
+<div id="chatbot" class="chatbot" style="display: none;">
+    <div id="chatHeader" class="chat-header">
+        <div class="chat-title">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-info">
+                <h3>ASISTENTE DE PROYECTOS</h3>
+                <span class="chat-status" id="chatStatus">En línea</span>
+            </div>
         </div>
-    </div>
-
-    <!-- Modal de configuración de API Key -->
-    <div id="configModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="config-modal-title"
-        aria-hidden="true">
-        <div class="modal-content">
-            <h2 id="config-modal-title">🔑 Configuración de API Key</h2>
-            <p>Para usar el chatbot necesitas configurar tu API Key de OpenAI:</p>
-
-            <form id="configForm" novalidate>
-                <div class="form-group">
-                    <label for="apiKeyInput">API Key de OpenAI:</label>
-                    <input type="password" id="apiKeyInput" name="apiKey" placeholder="sk-..." required
-                        aria-describedby="apiKeyError apiKeyHelp">
-                    <span id="apiKeyError" class="error-message" aria-live="polite"></span>
-                    <div id="apiKeyHelp" class="help-text">
-                        Obtén tu API Key en: <a href="https://platform.openai.com/api-keys"
-                            target="_blank">platform.openai.com/api-keys</a>
-                    </div>
-                </div>
-
-                <div class="config-status" id="configStatus" style="display: none;">
-                    <div class="status-indicator">
-                        <span class="status-icon">⏳</span>
-                        <span class="status-text">Validando API Key...</span>
-                    </div>
-                </div>
-
-                <div class="modal-buttons">
-                    <button type="button" id="configSkipBtn" class="btn btn-cancel">
-                        Saltar por ahora
-                    </button>
-                    <button type="submit" id="configSaveBtn" class="btn btn-primary" disabled>
-                        Guardar y Continuar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Mensaje de cancelación -->
-    <div id="cancelMessage" class="cancel-message" style="display: none;">
-        <div class="cancel-content">
-            <h2>⚠️ Información requerida</h2>
-            <p>Necesitamos tu nombre y la fecha actual para poder continuar con el chatbot.</p>
-            <button id="reopenModalBtn" class="btn btn-primary">
-                Intentar de nuevo
+        <div class="chat-actions">
+            <button id="configBtn" class="btn-icon" title="Configurar API Key" aria-label="Configurar API Key">
+                ⚙️
+            </button>
+            <button id="changeUserBtn" class="btn-icon" title="Cambiar usuario" aria-label="Cambiar usuario">
+                👤
+            </button>
+            <button id="generatePdfBtn" class="btn-icon" title="Generar PDF de chats" aria-label="Generar PDF de chats">
+                📄
+            </button>
+            <button id="minimizeBtn" class="btn-icon" title="Minimizar chat" aria-label="Minimizar chat">
+                ➖
             </button>
         </div>
     </div>
 
-    <!-- Contenedor principal del chatbot -->
-    <div id="chatbot" class="chatbot" style="display: none;">
-        <!-- Header del chatbot -->
-        <div id="chatHeader" class="chat-header">
-            <div class="chat-title">
-                <div class="chat-avatar">🤖</div>
-                <div class="chat-info">
-                    <h3>Asistente</h3>
-                    <span class="chat-status" id="chatStatus">En línea</span>
-                </div>
-            </div>
-            <div class="chat-actions">
-                <button id="configBtn" class="btn-icon" title="Configurar API Key" aria-label="Configurar API Key">
-                    ⚙️
-                </button>
-                <button id="changeUserBtn" class="btn-icon" title="Cambiar usuario" aria-label="Cambiar usuario">
-                    👤
-                </button>
-                <button id="generatePdfBtn" class="btn-icon" title="Generar PDF de chats" aria-label="Generar PDF de chats">
-                    📄
-                </button>
-                <button id="minimizeBtn" class="btn-icon" title="Minimizar chat" aria-label="Minimizar chat">
-                    ➖
+    <div id="chatMessages" class="chat-messages" aria-live="polite" aria-label="Mensajes del chat">
+    </div>
+
+    <form id="chatForm" class="chat-form">
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje"
+                autocomplete="off" maxlength="4000">
+            <div class="chat-buttons">
+                <button type="submit" id="sendBtn" class="btn-send" aria-label="Enviar mensaje"
+                    title="Enviar mensaje al chatbot">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"
+                            fill="currentColor" />
+                    </svg>
                 </button>
             </div>
         </div>
+    </form>
 
-        <!-- Área de mensajes -->
-        <div id="chatMessages" class="chat-messages" aria-live="polite" aria-label="Mensajes del chat">
-            <!-- Los mensajes se generarán dinámicamente -->
-        </div>
-
-        <!-- Formulario de entrada -->
-        <form id="chatForm" class="chat-form">
-            <div class="chat-input-container">
-                <input type="text" id="chatInput" placeholder="Escribe tu mensaje..." aria-label="Escribe tu mensaje"
-                    autocomplete="off" maxlength="4000">
-                <div class="chat-buttons">
-                    <button type="submit" id="sendBtn" class="btn-send" aria-label="Enviar mensaje"
-                        title="Enviar mensaje al chatbot">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"
-                                fill="currentColor" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </form>
-
-        <!-- Indicador de estado -->
-        <div id="statusIndicator" class="status-indicator" style="display: none;">
-            <span class="status-text">Conectando con OpenAI...</span>
-            <div class="loading-dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
+    <div id="statusIndicator" class="status-indicator" style="display: none;">
+        <span class="status-text">Conectando con OpenAI...</span>
+        <div class="loading-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
         </div>
     </div>
+</div>

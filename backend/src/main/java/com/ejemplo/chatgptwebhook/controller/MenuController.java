@@ -62,7 +62,7 @@ public class MenuController {
      */
     @PostMapping("/procesar/{optionId}")
     public ResponseEntity<String> procesarOpcionSeleccionada(@PathVariable int optionId, 
-                                                             @RequestParam(required = false) String sessionId) {
+        @RequestParam(required = false) String sessionId) {
         
         try {
             String resultado;

@@ -1,36 +1,27 @@
-/* ============================================
-   VARIABLES CSS Y RESET BÁSICO
-============================================ */
 
 :root {
-    /* Colores principales - Esquema moderno */
-    --primary-color: #667eea;
+    --principal-color: #6E85B7;
     --primary-hover: #5a67d8;
     --primary-light: #e6f3ff;
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-gradient: #6E85B7;
     --secondary-color: #4a5568;
     --success-color: #48bb78;
     --danger-color: #f56565;
     --warning-color: #ed8936;
     --menu-button-color: #667eea;
     --menu-button-hover: #5a67d8;
-    
-    /* Colores de fondo - Modo claro modernizado */
+    --PRUEBATATI: #f51629;
     --bg-primary: #ffffff;
     --bg-secondary: #f7fafc;
     --bg-tertiary: #edf2f7;
     --bg-glass: rgba(255, 255, 255, 0.25);
     --bg-overlay: rgba(26, 32, 44, 0.6);
     --bg-chat: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-    
-    /* Colores de texto */
     --text-primary: #2d3748;
     --text-secondary: #4a5568;
     --text-muted: #718096;
     --text-white: #ffffff;
     --text-accent: #667eea;
-    
-    /* Bordes y sombras modernos */
     --border-color: #e2e8f0;
     --border-radius: 12px;
     --border-radius-lg: 20px;
@@ -41,8 +32,6 @@
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.15);
-    
-    /* Tipografía */
     --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-size-xs: 0.75rem;
     --font-size-sm: 0.875rem;
@@ -50,16 +39,12 @@
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.25rem;
     --font-size-2xl: 1.5rem;
-    
-    /* Espaciado */
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
     --spacing-lg: 1.5rem;
     --spacing-xl: 2rem;
     --spacing-2xl: 3rem;
-    
-    /* Transiciones */
     --transition-fast: 150ms ease-in-out;
     --transition-normal: 250ms ease-in-out;
     --transition-slow: 350ms ease-in-out;
@@ -76,7 +61,7 @@ body {
     font-size: var(--font-size-base);
     line-height: 1.6;
     color: var(--text-primary);
-    background: var(--bg-chat);
+    background: var(--principal-color);
     background-attachment: fixed;
     overflow-x: hidden;
     position: relative;
@@ -96,9 +81,6 @@ body::before {
     z-index: -1;
 }
 
-/* ============================================
-   TOAST NOTIFICATIONS
-============================================ */
 
 .toast {
     position: fixed;
@@ -138,124 +120,8 @@ body::before {
     border-left: 4px solid var(--primary-color);
 }
 
-/* ============================================
-   OVERLAY DEL MODAL
-============================================ */
 
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--bg-overlay);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity var(--transition-normal), visibility var(--transition-normal);
-}
 
-.overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* ============================================
-   MODAL INICIAL
-============================================ */
-
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-xl);
-    z-index: 1000;
-    width: 90%;
-    max-width: 480px;
-    opacity: 0;
-    visibility: hidden;
-    transition: all var(--transition-normal);
-}
-
-.modal.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translate(-50%, -50%) scale(1);
-}
-
-.modal-content {
-    padding: var(--spacing-2xl);
-}
-
-.modal h2 {
-    font-size: var(--font-size-2xl);
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-sm);
-    text-align: center;
-}
-
-.modal p {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xl);
-    text-align: center;
-}
-
-/* ============================================
-   FORMULARIOS
-============================================ */
-
-.form-group {
-    margin-bottom: var(--spacing-lg);
-}
-
-.form-group label {
-    display: block;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-sm);
-}
-
-.form-group input {
-    width: 100%;
-    padding: var(--spacing-md);
-    border: 2px solid var(--border-color);
-    border-radius: var(--border-radius);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family);
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    background-color: var(--bg-primary);
-}
-
-.form-group input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.form-group input.invalid {
-    border-color: var(--danger-color);
-}
-
-.form-group input.invalid:focus {
-    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-}
-
-.error-message {
-    display: block;
-    color: var(--danger-color);
-    font-size: var(--font-size-sm);
-    margin-top: var(--spacing-xs);
-    min-height: 1.25rem;
-}
-
-/* ============================================
-   BOTONES
-============================================ */
 
 .btn {
     display: inline-flex;
@@ -335,116 +201,70 @@ body::before {
     margin-top: var(--spacing-xl);
 }
 
-/* ============================================
-   CONFIGURACIÓN DE API KEY
-============================================ */
 
-.help-text {
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-    margin-top: var(--spacing-xs);
-    line-height: 1.4;
-}
-
-.help-text a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.help-text a:hover {
-    text-decoration: underline;
-}
-
-.config-status {
-    margin: var(--spacing-lg) 0;
-    padding: var(--spacing-md);
-    background-color: var(--bg-tertiary);
-    border-radius: var(--border-radius);
-    border-left: 4px solid var(--primary-color);
-}
-
-.config-status .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
-.config-status .status-icon {
-    font-size: var(--font-size-lg);
-}
-
-.config-status .status-text {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-}
-
-.config-status.success {
-    border-left-color: var(--success-color);
-}
-
-.config-status.success .status-icon {
-    color: var(--success-color);
-}
-
-.config-status.error {
-    border-left-color: var(--danger-color);
-}
-
-.config-status.error .status-icon {
-    color: var(--danger-color);
-}
-
-.config-status.warning {
-    border-left-color: var(--warning-color);
-}
-
-.config-status.warning .status-icon {
-    color: var(--warning-color);
-}
-
-/* ============================================
-   MENSAJE DE CANCELACIÓN
-============================================ */
-
-.cancel-message {
+.bg-side {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-xl);
-    z-index: 1000;
-    width: 90%;
-    max-width: 480px;
+    top: 0;
+    height: 100vh;
+    width: auto;
+    z-index: -2;
+    object-fit: cover;
+    opacity: 0.3;
+    transition: opacity var(--transition-normal);
 }
 
-.cancel-content {
-    padding: var(--spacing-2xl);
-    text-align: center;
+.bg-left {
+    left: 0;
+    max-width: 30vw;
 }
 
-.cancel-content h2 {
-    font-size: var(--font-size-xl);
-    color: var(--warning-color);
-    margin-bottom: var(--spacing-md);
+.bg-right {
+    right: 0;
+    max-width: 24vw;
 }
 
-.cancel-content p {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-xl);
+/* Ajustes responsivos para las imágenes de fondo */
+@media (max-width: 1200px) {
+    .bg-side {
+        max-width: 35vw;
+        opacity: 0.25;
+    }
 }
 
-/* ============================================
-   CHATBOT
-============================================ */
+@media (max-width: 1024px) {
+    .bg-side {
+        max-width: 30vw;
+        opacity: 0.2;
+    }
+}
+
+@media (max-width: 768px) {
+    .bg-side {
+        max-width: 25vw;
+        opacity: 0.15;
+    }
+}
+
+@media (max-width: 600px) {
+    .bg-side {
+        max-width: 20vw;
+        opacity: 0.1;
+    }
+}
+
+@media (max-width: 480px) {
+    .bg-side {
+        display: none; /* Ocultar en móviles para mejor rendimiento */
+    }
+}
+
 
 .chatbot {
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    width: 400px;
-    height: 650px;
+    bottom: 40px;
+    right: 350px;
+    width: 650px;
+    height: 1200px;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -456,7 +276,7 @@ body::before {
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.3);
     transition: all var(--transition-normal);
-    max-width: 90vw;
+    max-width: 50vw;
     max-height: 90vh;
 }
 
@@ -682,7 +502,7 @@ body::before {
 }
 
 .message-bubble {
-    max-width: 75%;
+    max-width: 85%;
     padding: var(--spacing-lg);
     border-radius: var(--border-radius-lg);
     word-wrap: break-word;
@@ -926,9 +746,6 @@ body::before {
     transform: translateX(4px) scale(0.95);
 }
 
-/* ============================================
-   INDICADOR DE ESTADO
-============================================ */
 
 .status-indicator {
     padding: var(--spacing-sm) var(--spacing-lg);
@@ -977,9 +794,6 @@ body::before {
     }
 }
 
-/* ============================================
-   DEBUG INFO
-============================================ */
 
 .debug-info {
     position: fixed;
@@ -1001,9 +815,6 @@ body::before {
     color: var(--primary-color);
 }
 
-/* ============================================
-   ANIMACIONES
-============================================ */
 
 @keyframes messageSlideIn {
     0% {
@@ -1023,11 +834,7 @@ body::before {
     }
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-============================================ */
 
-/* Tablets en paisaje y escritorios pequeños */
 @media (max-width: 1024px) {
     .chatbot {
         width: 380px !important;
@@ -1043,11 +850,10 @@ body::before {
     }
     
     .message-bubble {
-        max-width: 80%;
+        max-width: 90%;
     }
 }
 
-/* Pantallas medianas */
 @media (max-width: 900px) {
     .chatbot {
         width: 350px !important;
@@ -1059,7 +865,6 @@ body::before {
     }
 }
 
-/* Tablets en retrato */
 @media (max-width: 768px) {
     :root {
         --font-size-base: 0.9rem;
@@ -1077,7 +882,6 @@ body::before {
     }
 }
 
-/* Pantallas pequeñas a medianas */
 @media (max-width: 600px) {
     .chatbot {
         width: 270px !important;
@@ -1115,7 +919,7 @@ body::before {
     
     .message-bubble {
         padding: var(--spacing-md);
-        max-width: 85%;
+        max-width: 90%;
     }
     
     .chat-form {
@@ -1149,7 +953,6 @@ body::before {
     }
 }
 
-/* Móviles grandes */
 @media (max-width: 480px) {
     :root {
         --font-size-base: 0.85rem;
@@ -1218,7 +1021,7 @@ body::before {
     
     .message-bubble {
         padding: var(--spacing-sm) var(--spacing-md);
-        max-width: 90%;
+        max-width: 95%;
         border-radius: var(--border-radius);
     }
     
@@ -1343,7 +1146,6 @@ body::before {
     }
 }
 
-/* Móviles pequeños */
 @media (max-width: 375px) {
     :root {
         --font-size-base: 0.8rem;
@@ -1443,9 +1245,6 @@ body::before {
     }
 }
 
-/* ============================================
-   SCROLLBAR PERSONALIZADO
-============================================ */
 
 .chat-messages::-webkit-scrollbar {
     width: 6px;
@@ -1465,9 +1264,6 @@ body::before {
     background: var(--text-secondary);
 }
 
-/* ============================================
-   CLASES UTILITARIAS
-============================================ */
 
 .sr-only {
     position: absolute;
@@ -1494,9 +1290,6 @@ body::before {
     }
 }
 
-/* ============================================
-   ESTILOS PARA MENÚ INTERACTIVO MODERNO
-============================================ */
 
 .menu-container {
     margin: var(--spacing-md) 0;
@@ -1536,6 +1329,17 @@ body::before {
     gap: var(--spacing-sm);
 }
 
+.menu-options-row {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.menu-options-center {
+    justify-content: center;
+}
+
 .menu-option-card {
     display: flex;
     align-items: center;
@@ -1550,6 +1354,32 @@ body::before {
     position: relative;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.menu-option-card-row {
+    flex: 1;
+    flex-direction: column;
+    text-align: center;
+    min-height: 120px;
+    justify-content: center;
+    max-width: 200px;
+}
+
+.menu-option-card-row .menu-option-icon {
+    margin-right: 0;
+    margin-bottom: var(--spacing-sm);
+    align-self: center;
+}
+
+.menu-option-card-row .menu-option-content {
+    flex: none;
+    text-align: center;
+}
+
+.menu-option-card-row .menu-option-arrow {
+    margin-left: 0;
+    margin-top: var(--spacing-xs);
+    align-self: center;
 }
 
 .menu-option-card::before {
@@ -1656,20 +1486,30 @@ body::before {
     transform: translateX(1px);
 }
 
-/* Efecto especial para la opción de salir */
-.menu-option-card[data-option-id="4"] .menu-option-icon {
+.menu-option-card[data-option-id="5"] .menu-option-icon {
     background: linear-gradient(135deg, var(--danger-color), #c53030);
 }
 
-.menu-option-card[data-option-id="4"]:hover {
+.menu-option-card[data-option-id="12"] .menu-option-icon {
+    background: linear-gradient(135deg, var(--danger-color), #c53030);
+}
+
+.menu-option-card[data-option-id="5"]:hover {
     border-color: rgba(239, 68, 68, 0.3);
 }
 
-.menu-option-card[data-option-id="4"]:hover::before {
+.menu-option-card[data-option-id="12"]:hover {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.menu-option-card[data-option-id="5"]:hover::before {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(197, 48, 48, 0.05));
 }
 
-/* Responsive para el menú moderno */
+.menu-option-card[data-option-id="12"]:hover::before {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(197, 48, 48, 0.05));
+}
+
 @media (max-width: 1024px) {
     .menu-container {
         margin: var(--spacing-md) 0;
@@ -1677,6 +1517,10 @@ body::before {
     
     .menu-option-card {
         padding: var(--spacing-md);
+    }
+    
+    .menu-option-card-row {
+        min-height: 100px;
     }
     
     .menu-option-icon {
@@ -1699,10 +1543,26 @@ body::before {
         padding: var(--spacing-sm) var(--spacing-md);
     }
     
+    .menu-option-card-row {
+        min-height: 90px;
+        padding: var(--spacing-sm);
+        max-width: 150px;
+    }
+    
+    .menu-options-row {
+        gap: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+    }
+    
     .menu-option-icon {
         width: 32px;
         height: 32px;
         margin-right: var(--spacing-sm);
+    }
+    
+    .menu-option-card-row .menu-option-icon {
+        margin-right: 0;
+        margin-bottom: var(--spacing-xs);
     }
     
     .menu-option-icon svg {
@@ -1723,6 +1583,11 @@ body::before {
         width: 20px;
         height: 20px;
         margin-left: var(--spacing-xs);
+    }
+    
+    .menu-option-card-row .menu-option-arrow {
+        margin-left: 0;
+        margin-top: var(--spacing-xs);
     }
     
     .menu-option-arrow svg {
@@ -1753,9 +1618,20 @@ body::before {
         gap: var(--spacing-xs);
     }
     
+    .menu-options-row {
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-sm);
+    }
+    
     .menu-option-card {
         padding: var(--spacing-sm);
         border-radius: var(--border-radius);
+    }
+    
+    .menu-option-card-row {
+        min-height: 80px;
+        padding: var(--spacing-xs);
+        max-width: 120px;
     }
     
     .menu-option-icon {
@@ -1763,6 +1639,11 @@ body::before {
         height: 28px;
         margin-right: var(--spacing-sm);
         border-radius: var(--border-radius);
+    }
+    
+    .menu-option-card-row .menu-option-icon {
+        margin-right: 0;
+        margin-bottom: var(--spacing-xs);
     }
     
     .menu-option-icon svg {
@@ -1786,6 +1667,11 @@ body::before {
         margin-left: var(--spacing-xs);
     }
     
+    .menu-option-card-row .menu-option-arrow {
+        margin-left: 0;
+        margin-top: var(--spacing-xs);
+    }
+    
     .menu-option-arrow svg {
         width: 8px;
         height: 8px;
@@ -1797,9 +1683,18 @@ body::before {
         padding: var(--spacing-xs) var(--spacing-sm);
     }
     
+    .menu-option-card-row {
+        min-height: 70px;
+        padding: var(--spacing-xs);
+    }
+    
     .menu-option-icon {
         width: 24px;
         height: 24px;
+    }
+    
+    .menu-option-card-row .menu-option-icon {
+        margin-bottom: var(--spacing-xs);
     }
     
     .menu-option-icon svg {
@@ -1820,23 +1715,22 @@ body::before {
         height: 16px;
     }
     
+    .menu-option-card-row .menu-option-arrow {
+        margin-top: var(--spacing-xs);
+    }
+    
     .menu-option-arrow svg {
         width: 7px;
         height: 7px;
     }
 }
 
-/* ============================================
-   MEJORAS PARA DISPOSITIVOS TÁCTILES
-============================================ */
 
-/* Aumentar áreas táctiles para móviles */
 @media (max-width: 768px) {
     .btn-icon, .menu-option-card, .message-avatar {
         touch-action: manipulation;
     }
     
-    /* Mejor feedback táctil */
     .menu-option-card:active {
         transform: scale(0.98);
         transition: transform 0.1s ease;
@@ -1853,7 +1747,6 @@ body::before {
     }
 }
 
-/* Desactivar hover en dispositivos táctiles */
 @media (hover: none) and (pointer: coarse) {
     .menu-option-card:hover,
     .message:hover .message-bubble,
@@ -1870,11 +1763,7 @@ body::before {
     }
 }
 
-/* ============================================
-   OPTIMIZACIONES ADICIONALES
-============================================ */
 
-/* Reducir animaciones en móviles para mejor rendimiento */
 @media (max-width: 480px) {
     *, *::before, *::after {
         animation-duration: 0.3s !important;
@@ -1882,7 +1771,6 @@ body::before {
         transition-duration: 0.2s !important;
     }
     
-    /* Simplificar gradientes complejos en móviles */
     .chat-header {
         background: var(--primary-color);
         animation: none;
@@ -1897,7 +1785,6 @@ body::before {
     }
 }
 
-/* Mejorar legibilidad en pantallas pequeñas */
 @media (max-width: 375px) {
     .message-text {
         font-size: var(--font-size-sm);
@@ -1909,7 +1796,6 @@ body::before {
     }
 }
 
-/* Ajustes específicos para iPhone SE y similares */
 @media (max-width: 320px) {
     :root {
         --font-size-base: 0.75rem;
@@ -1960,11 +1846,7 @@ body::before {
     }
 }
 
-/* ============================================
-   REGLAS ESPECÍFICAS PARA FORZAR RESPONSIVE
-============================================ */
 
-/* Asegurar que el chatbot nunca exceda el viewport */
 @media screen and (max-width: 500px) {
     .chatbot {
         width: 260px !important;
@@ -1976,7 +1858,6 @@ body::before {
     }
 }
 
-/* Para pantallas muy anchas pero no tan altas */
 @media screen and (max-height: 600px) and (min-width: 481px) {
     .chatbot {
         height: 90vh !important;
@@ -1984,7 +1865,6 @@ body::before {
     }
 }
 
-/* Para cualquier pantalla menor a 700px de ancho */
 @media screen and (max-width: 700px) {
     .chatbot {
         width: 280px !important;
@@ -1994,7 +1874,6 @@ body::before {
     }
 }
 
-/* Regla universal para pantallas pequeñas */
 @media screen and (max-width: 600px) {
     .chatbot {
         width: 270px !important;
@@ -2006,7 +1885,6 @@ body::before {
     }
 }
 
-/* Forzar para pantallas realmente pequeñas */
 @media screen and (max-width: 450px) {
     .chatbot {
         width: 250px !important;
@@ -2015,5 +1893,294 @@ body::before {
         bottom: 5px !important;
         max-width: 85vw !important;
         max-height: 60vh !important;
+    }
+}
+
+/* ============================================
+   Modal de configuración
+   ============================================ */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-fast);
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.config-modal {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-color);
+    transform: scale(0.9) translateY(20px);
+    transition: all var(--transition-fast);
+}
+
+.overlay.active .config-modal {
+    transform: scale(1) translateY(0);
+}
+
+.config-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.config-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-fast);
+}
+
+.btn-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.config-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.form-group label {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all var(--transition-fast);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-group input.error {
+    border-color: var(--error-color);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.field-error {
+    color: var(--error-color);
+    font-size: 0.8rem;
+    display: none;
+}
+
+.config-status {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.config-status.loading {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.config-status.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.config-status.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.config-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--text-secondary);
+}
+
+/* ============================================
+   Panel de debug
+   ============================================ */
+.debug-info {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 300px;
+    max-height: 400px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    overflow: hidden;
+}
+
+.debug-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.debug-header h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.btn-toggle {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-fast);
+}
+
+.btn-toggle:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.debug-content {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.debug-entry {
+    margin-bottom: var(--spacing-xs);
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
+    border-left: 3px solid var(--primary-color);
+}
+
+.debug-time {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+}
+
+.debug-message {
+    color: var(--text-primary);
+    margin-left: var(--spacing-xs);
+}
+
+/* Responsive para modal y debug */
+@media (max-width: 768px) {
+    .config-modal {
+        width: 95%;
+        padding: var(--spacing-lg);
+    }
+    
+    .config-actions {
+        flex-direction: column;
+    }
+    
+    .debug-info {
+        width: 250px;
+        top: 10px;
+        left: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .config-modal {
+        width: 98%;
+        padding: var(--spacing-md);
+    }
+    
+    .debug-info {
+        width: 200px;
+        max-height: 300px;
     }
 }
