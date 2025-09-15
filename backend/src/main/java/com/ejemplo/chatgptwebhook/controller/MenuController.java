@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/menu")
-@CrossOrigin(origins = "*") // Permitir CORS para pruebas
 public class MenuController {
     
     private static final Logger logger = LoggerFactory.getLogger(MenuController.class);

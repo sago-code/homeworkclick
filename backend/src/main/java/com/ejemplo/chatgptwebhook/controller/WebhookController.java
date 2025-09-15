@@ -16,7 +16,6 @@ import reactor.core.publisher.Mono;
  */
 @RestController
 @RequestMapping("/webhook")
-@CrossOrigin(origins = "*") // Permitir CORS para pruebas
 public class WebhookController {
 
     private static final Logger logger = LoggerFactory.getLogger(WebhookController.class);

@@ -107,6 +107,7 @@ export default async function Login() {
                     console.log("👉 Navegando a /chatbot");
                     navigateTo('/chatbot');
                     router();
+                    window.location.reload();
                 } else {
                     mensajeExito.style.color = 'red';
                     mensajeExito.textContent = resultado?.message || 'Error al iniciar sesión ❌';

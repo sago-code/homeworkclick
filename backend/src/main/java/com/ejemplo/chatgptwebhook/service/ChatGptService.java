@@ -86,6 +86,9 @@ public class ChatGptService {
                 })
                 .onErrorResume(WebClientResponseException.class, ex -> {
                     logger.error("Error al comunicarse con ChatGPT: {} - {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+                    if (ex.getStatusCode().value() == 401) {
+                        return Mono.just("Error de autenticación con la API de OpenAI. Por favor, verifica la API key configurada.");
+                    }
                     return Mono.just("Error al procesar tu mensaje. Por favor, inténtalo más tarde.");
                 })
                 .onErrorResume(Exception.class, ex -> {

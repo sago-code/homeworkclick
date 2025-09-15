@@ -24,18 +24,10 @@ export default class ChatbotApp {
         chatStatus: document.getElementById('chatStatus'),
         statusIndicator: document.getElementById('statusIndicator'),
         minimizeBtn: document.getElementById('minimizeBtn'),
-        configBtn: document.getElementById('configBtn'),
+        // Referencia al botón de configuración eliminada
         changeUserBtn: document.getElementById('changeUserBtn'),
   
-        // Modal de configuración
-        overlay: document.getElementById('overlay'),
-        configModal: document.getElementById('configModal'),
-        configForm: document.getElementById('configForm'),
-        apiKeyInput: document.getElementById('apiKeyInput'),
-        apiKeyError: document.getElementById('apiKeyError'),
-        configStatus: document.getElementById('configStatus'),
-        configSaveBtn: document.getElementById('configSaveBtn'),
-        configSkipBtn: document.getElementById('configSkipBtn'),
+        // Referencias al modal de configuración eliminadas
   
         // Debug (solo en localhost)
         debugInfo: document.getElementById('debugInfo'),
@@ -104,14 +96,7 @@ export default class ChatbotApp {
       // Botón cambiar usuario
       this.elements.changeUserBtn?.addEventListener('click', () => this.reiniciarSesionMenu());
 
-      // Botón configurar
-      this.elements.configBtn?.addEventListener('click', () => this.openConfigModal());
-
-      // Modal de configuración
-      this.elements.overlay?.addEventListener('click', () => this.closeConfigModal());
-      this.elements.configForm?.addEventListener('submit', (e) => this.handleConfigSubmit(e));
-      this.elements.configSkipBtn?.addEventListener('click', () => this.handleConfigSkip());
-      this.elements.apiKeyInput?.addEventListener('input', () => this.validateApiKeyInput());
+      // Referencias al modal de configuración eliminadas
 
       // Delegación de eventos en el área de mensajes (para tarjetas del menú)
       this.elements.chatMessages?.addEventListener('click', (e) => this.handleMenuCardClick(e));
@@ -162,9 +147,22 @@ export default class ChatbotApp {
     }
   
     createGreetingMessage() {
-      // Saludo genérico (sin nombre ni fecha)
+      // Obtener el nombre del usuario del localStorage
+      let userName = '';
+      try {
+        const userData = localStorage.getItem('user');
+        console.log("userData:", userData);
+        if (userData) {
+          const user = JSON.parse(userData);
+          userName = user.nombre || '';
+        }
+      } catch (error) {
+        console.error('Error al obtener datos del usuario:', error);
+      }
+
+      // Saludo personalizado si hay nombre, genérico si no
       return (
-        '¡Hola! Soy tu asistente para la gestión de proyectos. ' +
+        `¡Hola${userName ? ' ' + userName : ''}! Soy tu asistente para la gestión de proyectos. ` +
         'Elige una de las siguientes opciones para comenzar:'
       );
     }
@@ -402,24 +400,53 @@ export default class ChatbotApp {
       });
       if (!res.ok) {
         if (res.status === 400) {
-          const data = await res.json().catch(() => null);
-          throw new Error(data?.message || 'Datos inválidos');
+          try {
+            const data = await res.json();
+            throw new Error(data?.message || data?.respuesta || 'Datos inválidos');
+          } catch (jsonError) {
+            // Si no se puede parsear como JSON, intentamos obtener el texto
+            const text = await res.text().catch(() => null);
+            throw new Error(text || 'Datos inválidos');
+          }
         }
         if (res.status === 503) throw new Error('Servicio no disponible temporalmente');
         throw new Error(`Error del servidor (${res.status})`);
       }
-      const data = await res.json();
-      if (data.estado === 'error') throw new Error(data.respuesta || 'Error procesando');
-  
-      this.state.conversationHistory.push(
-        { role: 'user', content: message },
-        { role: 'assistant', content: data.respuesta }
-      );
-  
-      this.addBotMessage(data.respuesta, false, {
-        usuario: data.usuario,
-        estado: data.estado
-      });
+      
+      try {
+        // Primero intentamos obtener el texto de la respuesta
+        const responseText = await res.text();
+        
+        // Luego intentamos parsear como JSON
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          // Si no es JSON válido, mostramos el texto directamente
+          console.error('❌ Respuesta no es JSON válido:', responseText);
+          this.addBotMessage(responseText);
+          this.state.conversationHistory.push(
+            { role: 'user', content: message },
+            { role: 'assistant', content: responseText }
+          );
+          return;
+        }
+        
+        if (data.estado === 'error') throw new Error(data.respuesta || 'Error procesando');
+
+        this.state.conversationHistory.push(
+          { role: 'user', content: message },
+          { role: 'assistant', content: data.respuesta }
+        );
+
+        this.addBotMessage(data.respuesta, false, {
+          usuario: data.usuario,
+          estado: data.estado
+        });
+      } catch (jsonError) {
+        console.error('❌ Error al procesar la respuesta JSON:', jsonError);
+        throw new Error('Error al procesar la respuesta del servidor');
+      }
     }
   
     async sendProjectIdea(idea) {
@@ -570,107 +597,9 @@ export default class ChatbotApp {
     }
 
     // ============================================
-    // Configuración de API Key
+    // Configuración de API Key - Eliminada
     // ============================================
-    openConfigModal() {
-      this.elements.overlay?.classList.add('active');
-      this.elements.configModal?.classList.add('active');
-      this.elements.apiKeyInput?.focus();
-    }
-
-    closeConfigModal() {
-      this.elements.overlay?.classList.remove('active');
-      this.elements.configModal?.classList.remove('active');
-      this.clearFieldError('apiKeyInput');
-    }
-
-    validateApiKeyInput() {
-      const input = this.elements.apiKeyInput;
-      if (!input) return;
-
-      const value = input.value.trim();
-      if (value.length === 0) {
-        this.setFieldError('apiKeyInput', 'La API Key es requerida');
-        return false;
-      }
-      if (value.length < 20) {
-        this.setFieldError('apiKeyInput', 'La API Key parece muy corta');
-        return false;
-      }
-      if (!value.startsWith('sk-')) {
-        this.setFieldError('apiKeyInput', 'La API Key debe comenzar con "sk-"');
-        return false;
-      }
-
-      this.clearFieldError('apiKeyInput');
-      return true;
-    }
-
-    async handleConfigSubmit(e) {
-      e.preventDefault();
-      
-      if (!this.validateApiKeyInput()) return;
-
-      const apiKey = this.elements.apiKeyInput?.value.trim();
-      if (!apiKey) return;
-
-      this.showConfigStatus('Guardando...', 'loading');
-      
-      try {
-        // Simular guardado (en una app real, aquí se guardaría en localStorage o backend)
-        localStorage.setItem('openai_api_key', apiKey);
-        this.state.isConfigured = true;
-        
-        this.showConfigStatus('✅ API Key guardada correctamente', 'success');
-        setTimeout(() => {
-          this.closeConfigModal();
-          this.showToast('Configuración completada', 'success');
-        }, 1500);
-        
-      } catch (error) {
-        console.error('Error guardando API Key:', error);
-        this.showConfigStatus('❌ Error al guardar la API Key', 'error');
-      }
-    }
-
-    handleConfigSkip() {
-      this.closeConfigModal();
-      this.showToast('Puedes configurar la API Key más tarde desde el botón ⚙️', 'info');
-    }
-
-    showConfigStatus(message, type) {
-      const status = this.elements.configStatus;
-      if (!status) return;
-
-      status.textContent = message;
-      status.className = `config-status ${type}`;
-      status.style.display = 'block';
-    }
-
-    setFieldError(fieldId, message) {
-      const input = this.elements[fieldId];
-      const error = this.elements[fieldId + 'Error'];
-      
-      if (input) {
-        input.classList.add('error');
-      }
-      if (error) {
-        error.textContent = message;
-        error.style.display = 'block';
-      }
-    }
-
-    clearFieldError(fieldId) {
-      const input = this.elements[fieldId];
-      const error = this.elements[fieldId + 'Error'];
-      
-      if (input) {
-        input.classList.remove('error');
-      }
-      if (error) {
-        error.style.display = 'none';
-      }
-    }
+    // Los métodos relacionados con la configuración de API Key han sido eliminados
 
     // ============================================
     // Funciones de utilidad
