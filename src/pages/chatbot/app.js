@@ -1,3 +1,4 @@
+import { navigateTo } from '../../main';
 import './chatbot.css'
 
 export default class ChatbotApp {
@@ -737,7 +738,10 @@ export default class ChatbotApp {
       if (optionId === 4) {
         // Reiniciar sesión / limpiar chat sin modal
         this.addBotMessage('👋 ¡Sesión reiniciada!');
-        setTimeout(() => this.reiniciarSesionMenu(), 700);
+        sessionStorage.removeItem("user");
+        localStorage.removeItem("user");
+        navigateTo('/login');
+        router();
         return;
       }
   
