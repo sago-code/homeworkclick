@@ -38,7 +38,11 @@ export default class ChatbotApp {
         toast: document.getElementById('toast'),
 
         // Botón para generar PDF
-        generatePdfBtn: document.getElementById('generatePdfBtn')
+        generatePdfBtn: document.getElementById('generatePdfBtn'),
+        explanationPanel: document.getElementById('explanationPanel'),
+        panelTitle: document.getElementById('panelTitle'),
+        panelContent: document.getElementById('panelContent'),
+        closePanel: document.getElementById('closePanel')
       };
   
       // --- Estado ---
@@ -89,10 +93,20 @@ export default class ChatbotApp {
   
     setupEventListeners() {
       // Formulario de chat
+
+      this.elements.infoBtn?.addEventListener('click', () => {
+          this.openExplanationPanel('general');
+      });
       this.elements.chatForm?.addEventListener('submit', (e) => {
         e.preventDefault();
         this.sendMessage();
       });
+
+      this.elements.infoBtn?.addEventListener('click', () => {
+    this.openExplanationPanel('general');
+});
+
+      this.elements.closePanel?.addEventListener('click', () => this.closeExplanationPanel());
   
       // Botón minimizar
       this.elements.minimizeBtn?.addEventListener('click', () => this.toggleMinimize());
@@ -734,6 +748,8 @@ export default class ChatbotApp {
   
     handleMenuOptionClick(optionId, action, description) {
       this.addUserMessage(`${optionId}. ${description}`);
+      this.openExplanationPanel(optionId);
+      
   
       if (optionId === 4) {
         // Reiniciar sesión / limpiar chat sin modal
@@ -985,6 +1001,159 @@ export default class ChatbotApp {
       if (shouldShowMenu) setTimeout(() => this.showMenuOptions(), 1200);
       return el;
     }
+
+    openExplanationPanel(optionId) {
+    this.showExplanationContent(optionId);
+    this.elements.explanationPanel.classList.remove('hidden');
+    this.elements.chatbot.classList.remove('full-width');
+    
+    // Asegurar que el panel sea visible
+    this.elements.explanationPanel.style.transform = 'translateY(-50%)';
+    this.elements.explanationPanel.style.opacity = '1';
+    this.elements.explanationPanel.style.pointerEvents = 'auto';
+}
+closeExplanationPanel() {
+    this.elements.explanationPanel.classList.add('hidden');
+    this.elements.chatbot.classList.add('full-width');
+}
+
+showExplanationContent(optionId) {
+    let title = '';
+    let content = '';
+    
+    switch(optionId) {
+        case 1:
+            title = '🚀 Creación de Proyectos: ¿Cómo lo hacemos?';
+            content = this.getProjectCreationExplanation();
+            break;
+        case 2:
+            title = '📋 Creación de Tareas: ¿Cómo lo hacemos?';
+            content = this.getTaskCreationExplanation();
+            break;
+        case 3:
+            title = '👀 Consulta de Tareas: ¿Cómo lo hacemos?';
+            content = this.getTaskQueryExplanation();
+            break;
+        default:
+            title = '🤖 ¿Cómo procesamos tu solicitud?';
+            content = this.getGeneralExplanation();
+    }
+    
+    this.elements.panelTitle.textContent = title;
+    this.elements.panelContent.innerHTML = content;
+    
+    // Animar el contenido
+    this.animatePanelContent();
+}
+getProjectCreationExplanation() {
+    return `
+        <div class="data-structure">
+            <h3>📊 Tabla Hash para Proyectos</h3>
+            <p>Usamos una <span class="highlight">tabla hash</span> para almacenar los proyectos por sesión:</p>
+            <div class="structure-visual">
+                SessionID → {<br>
+                &nbsp;&nbsp;"proyecto": "Nombre del Proyecto",<br>
+                &nbsp;&nbsp;"tareas": "Lista de tareas",<br>
+                &nbsp;&nbsp;"completadas": [1, 3, 5]<br>
+                }
+            </div>
+        </div>
+        
+        <div class="process-flow">
+            <div class="process-step">
+                <h4>1. Idea → ChatGPT</h4>
+                <p>Tu idea se envía a ChatGPT para análisis</p>
+            </div>
+            <div class="process-step">
+                <h4>2. Procesamiento</h4>
+                <p>Extraemos nombre y tareas de la respuesta</p>
+            </div>
+            <div class="process-step">
+                <h4>3. Almacenamiento</h4>
+                <p>Guardamos en tabla hash por sesión</p>
+            </div>
+        </div>
+    `;
+}
+
+getTaskCreationExplanation() {
+    return `
+        <div class="data-structure">
+            <h3>📋 Lista Enlazada de Tareas</h3>
+            <p>Las tareas se almacenan como una <span class="highlight">lista enlazada</span>:</p>
+            <div class="structure-visual">
+                Tarea 1 → Tarea 2 → Tarea 3 → ... → Tarea N
+            </div>
+            <p>Cada tarea tiene:</p>
+            <ul>
+                <li>Número secuencial</li>
+                <li>Descripción</li>
+                <li>Estado (completada/pendiente)</li>
+            </ul>
+        </div>
+    `;
+}
+
+getTaskQueryExplanation() {
+    return `
+        <div class="data-structure">
+            <h3>🔍 Grafo de Relaciones</h3>
+            <p>Usamos un <span class="highlight">grafo</span> para relaciones entre proyectos:</p>
+            <div class="structure-visual">
+                Proyecto A → Proyecto B (dependencia)<br>
+                Proyecto B → Proyecto C (relacionado)<br>
+                Proyecto A → Proyecto D (similar)
+            </div>
+        </div>
+        
+        <div class="data-structure">
+            <h3>✅ Conjunto de Tareas Completadas</h3>
+            <p>Usamos un <span class="highlight">HashSet</span> para tareas completadas:</p>
+            <div class="structure-visual">
+                {1, 3, 5, 7, 9}
+            </div>
+            <p>Permite verificación rápida de estado O(1)</p>
+        </div>
+    `;
+}
+
+getGeneralExplanation() {
+    return `
+        <div class="data-structure">
+            <h3>🏗️ Arquitectura del Sistema</h3>
+            <p>Este sistema utiliza múltiples estructuras de datos:</p>
+            <ul>
+                <li><strong>Tablas Hash</strong>: Para almacenamiento rápido por sesión</li>
+                <li><strong>Listas Enlazadas</strong>: Para secuencias de tareas</li>
+                <li><strong>Grafos</strong>: Para relaciones entre proyectos</li>
+                <li><strong>Conjuntos</strong>: Para seguimiento de estado</li>
+            </ul>
+        </div>
+        
+        <div class="json-example">
+            <span class="json-key">"session_123"</span>: {<br>
+            &nbsp;&nbsp;<span class="json-key">"nombreProyecto"</span>: <span class="json-string">"Sistema de Gestión"</span>,<br>
+            &nbsp;&nbsp;<span class="json-key">"tareas"</span>: <span class="json-string">"1. Diseño\\n2. Implementación..."</span>,<br>
+            &nbsp;&nbsp;<span class="json-key">"completadas"</span>: [<span class="json-number">1</span>, <span class="json-number">2</span>]<br>
+            }
+        </div>
+    `;
+}
+
+animatePanelContent() {
+    const elements = this.elements.panelContent.querySelectorAll('.data-structure, .process-step');
+    
+    elements.forEach((element, index) => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }, index * 200);
+    });
+}
   
     addUserMessage(text) {
       const el = this.createMessageElement('user', text);
@@ -1155,3 +1324,4 @@ export default class ChatbotApp {
     console.log('🎯 DOM listo - inicializando ChatbotApp (sin modal de ingreso)');
     chatbotApp = new ChatbotApp();
   });
+  

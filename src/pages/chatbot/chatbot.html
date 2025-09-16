@@ -3,6 +3,17 @@
 
 <div id="toast" class="toast" aria-live="polite"></div>
 
+<!-- Panel lateral para explicaciones de estructuras de datos -->
+<div id="explanationPanel" class="explanation-panel">
+    <div class="panel-header">
+        <h2 id="panelTitle">🤖 ¿Cómo procesamos tu solicitud?</h2>
+        <button class="close-panel" id="closePanel">×</button>
+    </div>
+    <div id="panelContent" class="panel-content">
+        <!-- El contenido se cargará dinámicamente según la opción seleccionada -->
+    </div>
+</div>
+
 <div id="chatbot" class="chatbot" style="display: none;">
     <div id="chatHeader" class="chat-header">
         <div class="chat-title">
@@ -23,6 +34,7 @@
             <button id="minimizeBtn" class="btn-icon" title="Minimizar chat" aria-label="Minimizar chat">
                 ➖
             </button>
+            
         </div>
     </div>
 
