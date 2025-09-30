@@ -1,49 +1,36 @@
 package com.ejemplo.chatgptwebhook.model;
 
 import java.util.List;
+import java.util.Collections;
 
 /**
  * Modelo para la respuesta del menú principal
  */
 public class MenuResponse {
     
-    private String titulo;
-    private List<MenuOption> opciones;
-    private String estado;
-    
-    public MenuResponse() {}
-    
+    private final String titulo;
+    private final List<MenuOption> opciones; // inmutable por copia defensiva
+    private final String estado;
+
     public MenuResponse(String titulo, List<MenuOption> opciones, String estado) {
         this.titulo = titulo;
-        this.opciones = opciones;
+        this.opciones = opciones == null ? Collections.emptyList() : Collections.unmodifiableList(opciones);
         this.estado = estado;
     }
-    
-    // Getters y Setters
+
+    // Getters solo-lectura con colecciones inmutables
     public String getTitulo() {
         return titulo;
     }
-    
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-    
+
     public List<MenuOption> getOpciones() {
         return opciones;
     }
-    
-    public void setOpciones(List<MenuOption> opciones) {
-        this.opciones = opciones;
-    }
-    
+
     public String getEstado() {
         return estado;
     }
-    
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-    
+
     @Override
     public String toString() {
         return "MenuResponse{" +

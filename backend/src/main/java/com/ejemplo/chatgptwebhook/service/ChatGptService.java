@@ -58,16 +58,16 @@ public class ChatGptService {
         logger.info("Enviando mensaje a ChatGPT con {} tokens máximo: {}", maxTokens, mensaje);
 
         // Crear la petición para ChatGPT
-        ChatGptRequest request = new ChatGptRequest();
-        request.setModel("gpt-3.5-turbo");
-        request.setMaxTokens(maxTokens);
-        request.setTemperature(0.7);
-        
-        // Configurar el mensaje
+        // Construir petición inmutable
         List<Map<String, String>> messages = List.of(
             Map.of("role", "user", "content", mensaje)
         );
-        request.setMessages(messages);
+        ChatGptRequest request = new ChatGptRequest(
+            "gpt-3.5-turbo",
+            messages,
+            maxTokens,
+            0.7
+        );
 
         return webClient.post()
                 .bodyValue(request)

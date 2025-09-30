@@ -3,8 +3,46 @@ import axios from 'axios';
 import router, { navigateTo } from '../../main.js';
 
 export default async function Login() {
+    // Estado local con inmutabilidad
+    let state = {
+        loading: false,
+        error: null,
+        success: null
+    };
+
+    const setState = (next) => {
+        state = { ...state, ...next };
+    };
+
+    // Helpers de storage con copias inmutables
+    const readUserFromStorage = () => {
+        try {
+            const src = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if (!src) return null;
+            const obj = JSON.parse(src);
+            // devolver copia defensiva
+            return obj ? JSON.parse(JSON.stringify(obj)) : null;
+        } catch {
+            return null;
+        }
+    };
+
+    const writeUserToStorage = (user) => {
+        const normalized = user ? {
+            id: user.id,
+            email: user.email,
+            nombre: user.nombre,
+            token: user.token
+        } : null;
+        const payload = normalized ? JSON.stringify(normalized) : null;
+        if (payload) {
+            sessionStorage.setItem('user', payload);
+            localStorage.setItem('user', payload);
+        }
+    };
+
     // Verificar si hay datos de usuario en el almacenamiento
-    const userInStorage = localStorage.getItem('user') || sessionStorage.getItem('user');
+    const userInStorage = readUserFromStorage();
     if (userInStorage) {
         console.log("👉 Usuario encontrado en almacenamiento, redirigiendo a /chatbot");
         navigateTo('/chatbot');
@@ -95,6 +133,8 @@ export default async function Login() {
         formUsuario.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            setState({ loading: true, error: null, success: null });
+
             const datosLogin = {
                 email: document.getElementById('correo').value,
                 password: document.getElementById('contraseña').value
@@ -109,8 +149,8 @@ export default async function Login() {
                 if (resultado && resultado.id) {
                     mensajeExito.style.color = 'green';
                     mensajeExito.textContent = 'Usuario logueado con éxito ✅';
-                    sessionStorage.setItem('user', JSON.stringify(resultado));
-                    localStorage.setItem('user', JSON.stringify(resultado));
+                    writeUserToStorage(resultado);
+                    setState({ success: 'ok', loading: false });
 
                     console.log("👉 Navegando a /chatbot");
                     navigateTo('/chatbot');
@@ -119,11 +159,13 @@ export default async function Login() {
                 } else {
                     mensajeExito.style.color = 'red';
                     mensajeExito.textContent = resultado?.message || 'Error al iniciar sesión ❌';
+                    setState({ error: 'login_failed', loading: false });
                 }
             } catch (error) {
                 console.error('Error al iniciar sesión:', error);
                 mensajeExito.style.color = 'red';
                 mensajeExito.textContent = 'Error al iniciar sesión ❌';
+                setState({ error: 'login_exception', loading: false });
             }
         });
     }
@@ -178,12 +220,14 @@ export default async function Login() {
             const data = response.data;
 
             // Normalizamos lo que nos interesa
-            return {
+            const normalized = {
                 id: data.usuario.id,
                 email: data.usuario.email,
                 nombre: data.usuario.first_name + " " + data.usuario.last_name,
                 token: data.token
             };
+            // devolver copia inmutable
+            return JSON.parse(JSON.stringify(normalized));
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             throw error;

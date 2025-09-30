@@ -2,6 +2,7 @@ package com.ejemplo.chatgptwebhook.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * Modelo para las peticiones entrantes al webhook
@@ -10,14 +11,14 @@ public class WebhookRequest {
     
     @NotBlank(message = "El mensaje no puede estar vacío")
     @JsonProperty("mensaje")
-    private String mensaje;
+    private final String mensaje;
     
     @JsonProperty("usuario")
-    private String usuario;
+    private final String usuario;
 
-    public WebhookRequest() {}
-
-    public WebhookRequest(String mensaje, String usuario) {
+    @JsonCreator
+    public WebhookRequest(@JsonProperty("mensaje") String mensaje,
+                          @JsonProperty("usuario") String usuario) {
         this.mensaje = mensaje;
         this.usuario = usuario;
     }
@@ -26,16 +27,8 @@ public class WebhookRequest {
         return mensaje;
     }
 
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
-
     public String getUsuario() {
         return usuario;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
     }
 
     @Override

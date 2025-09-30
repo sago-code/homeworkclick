@@ -1,6 +1,7 @@
 package com.ejemplo.chatgptwebhook.controller;
 
 import com.ejemplo.chatgptwebhook.entities.Usuario;
+import com.ejemplo.chatgptwebhook.model.UsuarioDto;
 import com.ejemplo.chatgptwebhook.model.LoginRequest;
 import com.ejemplo.chatgptwebhook.model.UsuarioRequest;
 import com.ejemplo.chatgptwebhook.service.UsuarioService;
@@ -27,7 +28,7 @@ public class UsuarioController {
     public ResponseEntity<?> registrarUsuario(@RequestBody UsuarioRequest request) {
         try {
             Usuario usuario = usuarioService.registrarUsuario(request);
-            return ResponseEntity.ok(usuario);
+            return ResponseEntity.ok(UsuarioDto.fromEntity(usuario));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -45,10 +46,10 @@ public class UsuarioController {
             // Generar token JWT
             String token = jwtUtil.generateToken(usuario.getEmail());
             
-            // Crear respuesta con token y información del usuario
+            // Crear respuesta con token y DTO inmutable del usuario
             Map<String, Object> response = new HashMap<>();
             response.put("token", token);
-            response.put("usuario", usuario);
+            response.put("usuario", UsuarioDto.fromEntity(usuario));
             response.put("message", "Login exitoso");
             
             return ResponseEntity.ok(response);

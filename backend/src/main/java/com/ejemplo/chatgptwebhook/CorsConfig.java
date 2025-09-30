@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // 👈 Acepta CORS en todos los endpoints
-                        .allowedOriginPatterns("*") // 👈 Usa allowedOriginPatterns en lugar de allowedOrigins
+                        .allowedOrigins("http://localhost:5173") // 👈 tu frontend (Vite)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization") // 👈 si usas JWT en headers

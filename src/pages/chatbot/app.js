@@ -11,6 +11,16 @@ export default class ChatbotApp {
         toastDuration: 5000,
         debugMode: this.isLocalhost()
       };
+      // Congelar configuración profunda para evitar mutaciones accidentales
+      const deepFreeze = (obj) => {
+        if (!obj || typeof obj !== 'object') return obj;
+        Object.getOwnPropertyNames(obj).forEach((name) => {
+          const value = obj[name];
+          if (value && typeof value === 'object') deepFreeze(value);
+        });
+        return Object.freeze(obj);
+      };
+      deepFreeze(this.config);
   
       // --- Referencias al DOM ---
       this.elements = {
@@ -61,6 +71,25 @@ export default class ChatbotApp {
         waitingForTaskNumber: false
       };
   
+      // --- Helpers de usuario (storage inmutable) ---
+      this.readUserFromStorage = () => {
+        try {
+          const src = localStorage.getItem('user') || sessionStorage.getItem('user');
+          if (!src) return null;
+          const obj = JSON.parse(src);
+          return obj ? JSON.parse(JSON.stringify(obj)) : null; // copia defensiva
+        } catch {
+          return null;
+        }
+      };
+
+      this.clearUserFromStorage = () => {
+        try {
+          sessionStorage.removeItem('user');
+          localStorage.removeItem('user');
+        } catch {}
+      };
+
       // --- Inicialización ---
       this.init();
       this.setupDebugModeIfNeeded();
@@ -69,6 +98,9 @@ export default class ChatbotApp {
     // ============================================
     // Ciclo de vida
     // ============================================
+    setState(nextState) {
+      this.state = { ...this.state, ...nextState };
+    }
     init() {
       console.log('🚀 Iniciando Chatbot (sin modal de ingreso)...');
       this.setupEventListeners();
@@ -134,11 +166,11 @@ export default class ChatbotApp {
         const res = await fetch(`${this.config.backendUrl}/webhook/health`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const info = await res.text();
-        this.state.isConnected = true;
+        this.setState({ isConnected: true });
         this.showStatus('En línea', 'online');
         this.showToast('Conectado al backend correctamente', 'success');
       } catch (err) {
-        this.state.isConnected = false;
+        this.setState({ isConnected: false });
         this.showStatus('Sin conexión', 'error');
         console.error('❌ Error conectando al backend:', err);
         this.showToast('No se pudo conectar al backend en http://localhost:8080', 'error');
@@ -157,7 +189,7 @@ export default class ChatbotApp {
   
       // Resetear mensajes
       this.elements.chatMessages.innerHTML = '';
-      this.state.conversationHistory = [];
+      this.setState({ conversationHistory: [] });
   
       // Saludo y menú
       setTimeout(() => {
@@ -171,12 +203,8 @@ export default class ChatbotApp {
       // Obtener el nombre del usuario del localStorage
       let userName = '';
       try {
-        const userData = localStorage.getItem('user');
-        console.log("userData:", userData);
-        if (userData) {
-          const user = JSON.parse(userData);
-          userName = user.nombre || '';
-        }
+        const user = this.readUserFromStorage();
+        if (user) userName = user.nombre || '';
       } catch (error) {
         console.error('Error al obtener datos del usuario:', error);
       }
@@ -194,13 +222,13 @@ export default class ChatbotApp {
     async loadMenuOptions() {
       try {
         if (!this.state.menuSessionId) {
-          this.state.menuSessionId = 'session_' + this.state.userId + '_' + Date.now();
+          this.setState({ menuSessionId: 'session_' + this.state.userId + '_' + Date.now() });
         }
         const url = `${this.config.backendUrl}/api/menu/opciones?sessionId=${this.state.menuSessionId}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        this.state.menuSessionActive = data.estado === 'activo';
+        this.setState({ menuSessionActive: data.estado === 'activo' });
         return data;
       } catch (err) {
         console.error('❌ Error cargando menú:', err);
@@ -222,12 +250,12 @@ export default class ChatbotApp {
     
   
     createMenuMessage(menuData) {
-      const iconos = {
+      const iconos = Object.freeze({
         1: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>',
         2: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         3: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         4: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12L16 7M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-      };
+      });
   
       let html = `<div class="menu-container">`;
       html += `<div class="menu-header">`;
@@ -280,12 +308,12 @@ export default class ChatbotApp {
     }
   
     getMenuOptionDescription(id) {
-      const d = {
+      const d = Object.freeze({
         1: 'Inicia un nuevo proyecto con ayuda de IA',
         2: 'Genera tareas automáticamente para tu proyecto',
         3: 'Revisa el estado de tus proyectos existentes',
         4: 'Finalizar sesión y reiniciar'
-      };
+      });
       return d[id] || 'Acción del menú';
     }
 
@@ -754,15 +782,14 @@ export default class ChatbotApp {
       if (optionId === 4) {
         // Reiniciar sesión / limpiar chat sin modal
         this.addBotMessage('👋 ¡Sesión reiniciada!');
-        sessionStorage.removeItem("user");
-        localStorage.removeItem("user");
+        this.clearUserFromStorage();
         navigateTo('/login');
         router();
         return;
       }
   
-      if (optionId === 1) this.state.waitingForProjectIdea = true;
-      if (optionId === 2) this.state.waitingForNewTask = true; // se ajustará tras respuesta
+      if (optionId === 1) this.setState({ waitingForProjectIdea: true });
+      if (optionId === 2) this.setState({ waitingForNewTask: true }); // se ajustará tras respuesta
   
       this.processMenuAction(action, description, optionId);
     }
@@ -809,14 +836,14 @@ export default class ChatbotApp {
   
         // Heurísticas para estados de espera
         if (optionId === 2 && this.esRespuestaSolicitandoNuevaTarea(resultado)) {
-          this.state.waitingForNewTask = true;
+          this.setState({ waitingForNewTask: true });
         }
         if (optionId === 3 && this.esRespuestaSolicitandoNumeroTarea(resultado)) {
-          this.state.waitingForTaskNumber = true;
+          this.setState({ waitingForTaskNumber: true });
         }
   
         if (action === 'salir') {
-          this.state.menuSessionActive = false;
+          this.setState({ menuSessionActive: false });
           setTimeout(() => this.reiniciarSesionMenu(), 1500);
         }
       } catch (err) {
@@ -877,13 +904,13 @@ export default class ChatbotApp {
       try {
         if (this.state.waitingForProjectIdea) {
           await this.sendProjectIdea(message);
-          this.state.waitingForProjectIdea = false;
+          this.setState({ waitingForProjectIdea: false });
         } else if (this.state.waitingForNewTask) {
           await this.sendNewTask(message);
-          this.state.waitingForNewTask = false;
+          this.setState({ waitingForNewTask: false });
         } else if (this.state.waitingForTaskNumber) {
           await this.sendTaskNumber(message);
-          this.state.waitingForTaskNumber = false;
+          this.setState({ waitingForTaskNumber: false });
         } else {
           await this.sendWebhookMessage(message);
         }
@@ -932,19 +959,21 @@ export default class ChatbotApp {
           // Si no es JSON válido, mostramos el texto directamente
           console.error('❌ Respuesta no es JSON válido:', responseText);
           this.addBotMessage(responseText);
-          this.state.conversationHistory.push(
-            { role: 'user', content: message },
-            { role: 'assistant', content: responseText }
-          );
+        this.state.conversationHistory = [
+          ...this.state.conversationHistory,
+          { role: 'user', content: message },
+          { role: 'assistant', content: responseText }
+        ];
           return;
         }
         
         if (data.estado === 'error') throw new Error(data.respuesta || 'Error procesando');
 
-        this.state.conversationHistory.push(
+        this.state.conversationHistory = [
+          ...this.state.conversationHistory,
           { role: 'user', content: message },
           { role: 'assistant', content: data.respuesta }
-        );
+        ];
 
         this.addBotMessage(data.respuesta, false, {
           usuario: data.usuario,
@@ -962,7 +991,11 @@ export default class ChatbotApp {
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const text = await res.text();
       this.addBotMessage(text);
-      this.state.conversationHistory.push({ role: 'user', content: idea }, { role: 'assistant', content: text });
+      this.state.conversationHistory = [
+        ...this.state.conversationHistory,
+        { role: 'user', content: idea },
+        { role: 'assistant', content: text }
+      ];
     }
   
     async sendNewTask(tarea) {
@@ -971,7 +1004,11 @@ export default class ChatbotApp {
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const text = await res.text();
       this.addBotMessage(text);
-      this.state.conversationHistory.push({ role: 'user', content: tarea }, { role: 'assistant', content: text });
+      this.state.conversationHistory = [
+        ...this.state.conversationHistory,
+        { role: 'user', content: tarea },
+        { role: 'assistant', content: text }
+      ];
     }
   
     async sendTaskNumber(num) {
@@ -980,7 +1017,11 @@ export default class ChatbotApp {
       if (!res.ok) throw new Error(`Error ${res.status}`);
       const text = await res.text();
       this.addBotMessage(text);
-      this.state.conversationHistory.push({ role: 'user', content: num }, { role: 'assistant', content: text });
+      this.state.conversationHistory = [
+        ...this.state.conversationHistory,
+        { role: 'user', content: num },
+        { role: 'assistant', content: text }
+      ];
     }
   
     // ============================================
@@ -1045,6 +1086,7 @@ showExplanationContent(optionId) {
     // Animar el contenido
     this.animatePanelContent();
 }
+
 getProjectCreationExplanation() {
     return `
         <div class="data-structure">
@@ -1243,7 +1285,7 @@ animatePanelContent() {
     }
   
     toggleMinimize() {
-      this.state.isChatMinimized = !this.state.isChatMinimized;
+      this.setState({ isChatMinimized: !this.state.isChatMinimized });
       if (this.state.isChatMinimized) {
         this.elements.chatbot.classList.add('minimized');
         this.elements.minimizeBtn.textContent = '➕';
@@ -1305,8 +1347,10 @@ animatePanelContent() {
     // Sesión de menú
     // ============================================
     async reiniciarSesionMenu() {
-      this.state.menuSessionId = 'session_' + this.state.userId + '_' + Date.now();
-      this.state.menuSessionActive = true;
+      this.setState({
+        menuSessionId: 'session_' + this.state.userId + '_' + Date.now(),
+        menuSessionActive: true
+      });
       this.elements.chatMessages.innerHTML = '';
       this.addBotMessage('🔄 Nueva sesión iniciada.');
       setTimeout(() => this.showMenuOptions(), 600);
