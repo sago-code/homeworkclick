@@ -5,13 +5,14 @@ import com.ejemplo.chatgptwebhook.model.MenuResponse;
 import com.ejemplo.chatgptwebhook.datastructures.TablaHash;
 import com.ejemplo.chatgptwebhook.datastructures.Grafo;
 import com.ejemplo.chatgptwebhook.datastructures.ListaEnlazada;
+import com.ejemplo.chatgptwebhook.datastructures.Cola;
+import com.ejemplo.chatgptwebhook.datastructures.Trie;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,100 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 public class MenuService {
+
+    private String limpiarConectoresIniciales(String texto) {
+        if (texto == null) return null;
+        String t = texto.trim();
+        while (t.matches("^(de|sobre|para|un|una|uno|del|la|el|los|las)\\s+.*")) {
+            t = t.replaceFirst("^(de|sobre|para|un|una|uno|del|la|el|los|las)\\s+", "").trim();
+        }
+        return t;
+    }
+
+    private String recortarFraseInicial(String texto) {
+        if (texto == null) return null;
+        String[] partes = texto.split("[\\.,;\\n]");
+        return partes.length > 0 ? partes[0].trim() : texto.trim();
+    }
+
+    private boolean esMensajeErrorChatGpt(String s) {
+        if (s == null) return true;
+        String lower = s.toLowerCase();
+        return lower.isBlank()
+            || lower.contains("error procesando tu mensaje")
+            || lower.contains("error al procesar tu mensaje")
+            || lower.contains("error de autenticación")
+            || lower.contains("no pude conectar con chatgpt")
+            || lower.contains("ocurrió un error inesperado")
+            || lower.contains("unauthorized")
+            || lower.contains("401");
+    }
+
+    private String formatearNombreDesdeIdea(String idea) {
+        if (idea == null) return null;
+        String s = idea.trim();
+
+        // Trabajo en minúsculas para detectar patrones, pero devuelvo capitalizado.
+        String lower = s.toLowerCase();
+
+        // Si contiene "proyecto" o términos similares, tomo lo que viene después
+        String[] claves = new String[] { "proyecto", "app", "aplicacion", "aplicación", "sistema", "tienda", "web" };
+        int idx = -1;
+        String claveUsada = null;
+        for (String k : claves) {
+            int i = lower.indexOf(k);
+            if (i >= 0 && (idx == -1 || i < idx)) {
+                idx = i;
+                claveUsada = k;
+            }
+        }
+
+        String candidato;
+        if (idx >= 0 && claveUsada != null) {
+            // Después de "proyecto"/"app"/"aplicación"/...
+            candidato = s.substring(idx + claveUsada.length()).trim();
+            candidato = limpiarConectoresIniciales(candidato);
+        } else {
+            // Quita comandos iniciales: crea/creame/genera/generame/haz/quiero/necesito/…
+            String sinComando = lower.replaceFirst(
+                "^(crea(me)?|crear|genera(me)?|generar|haz(me)?|hacer|construye(me)?|construir|monta(me)?|montar|arma(me)?|armar|diseña(me)?|diseñar|quiero|necesito)\\s+(un|una|uno)?\\s*",
+                ""
+            );
+
+            // También quita encabezados tipo "proyecto/app/sistema/..." si estuvieran al inicio
+            sinComando = sinComando.replaceFirst("^(proyecto|app|aplicacion|aplicación|sistema|web|tienda)\\s+(de|sobre|para)?\\s*", "");
+            sinComando = limpiarConectoresIniciales(sinComando);
+
+            // Usa la versión original para conservar capitalización, alineando por longitud recortada
+            int recorte = lower.length() - sinComando.length();
+            candidato = s.substring(Math.min(recorte, s.length())).trim();
+        }
+
+        candidato = recortarFraseInicial(candidato);
+
+        // Si quedó vacío o muy genérico, aborta
+        if (candidato == null || candidato.isBlank()) return null;
+        String gen = candidato.toLowerCase();
+        if (gen.matches("^(crear|crea|genera|haz|hacer|generar|proyecto|app|aplicacion|aplicación|sistema|web|tienda)$")) {
+            return null;
+        }
+
+        // Capitaliza palabras básicas
+        String[] words = candidato.split("\\s+");
+        StringBuilder title = new StringBuilder();
+        for (String w : words) {
+            if (w.isBlank()) continue;
+            String cap = w.substring(0, 1).toUpperCase() + w.substring(1);
+            title.append(cap).append(" ");
+        }
+        String nombre = title.toString().trim();
+
+        // Limita longitud razonable
+        if (nombre.length() > 80) {
+            nombre = nombre.substring(0, 80).trim();
+        }
+        return nombre;
+    }
     
     private static final Logger logger = LoggerFactory.getLogger(MenuService.class);
     
@@ -37,6 +132,7 @@ public class MenuService {
     private final TablaHash<String, String> nombreProyectoSesion = new TablaHash<>();
     private final TablaHash<String, String> tareasProyectoSesion = new TablaHash<>();
     private final TablaHash<String, Set<Integer>> tareasCompletadasSesion = new TablaHash<>();
+    private final TablaHash<String, Trie> trieTareasPorSesion = new TablaHash<>();
     
     // Grafo para relaciones entre proyectos
     private final Grafo<String> relacionesProyectos = new Grafo<>();
@@ -44,6 +140,30 @@ public class MenuService {
     // Inyección del servicio de ChatGPT
     @Autowired
     private ChatGptService chatGptService;
+    
+    // NUEVO: servicio para persistir proyectos/tareas
+    @Autowired
+    private ProjectService projectService;
+    
+    // Lista enlazada: tareas ordenadas por sesión
+    private final TablaHash<String, ListaEnlazada<String>> listaTareasPorSesion = new TablaHash<>();
+    // Trie: indexa nombres de proyectos por admin
+    private final TablaHash<Long, Trie> trieProyectosPorAdmin = new TablaHash<>();
+    // Cola: encola nuevas tareas por sesión (se drena para sincronizar)
+    private final TablaHash<String, Cola<String>> colaTareasPendientesPorSesion = new TablaHash<>();
+    
+    // Últimos proyectos para crear relaciones en el grafo
+    private final TablaHash<String, String> ultimoProyectoPorSesion = new TablaHash<>();
+    private final TablaHash<Long, String> ultimoProyectoPorAdmin = new TablaHash<>();
+    
+    // Mapa: sessionId -> admin userId
+    private final Map<String, Long> adminUserIdPorSesion = new ConcurrentHashMap<>();
+    
+    // NUEVO: registrar el userId del admin para una sesión
+    public void setAdminUserForSession(String sessionId, Long userId) {
+        if (sessionId == null || sessionId.isBlank()) sessionId = "default_session";
+        adminUserIdPorSesion.put(sessionId, userId);
+    }
     
     /**
      * Obtiene las opciones del menú principal (Versión web que usa mostrarMenuPrincipal)
@@ -263,8 +383,13 @@ public class MenuService {
      * Procesa la idea del proyecto con ChatGPT y guarda el contexto
      */
     private String procesarIdeaProyectoConChatGPT(String ideaProyecto, String sessionId) {
+        String respuestaChatGPT = null;
+        boolean esError = false;
+        String nombreProyecto = null;
+        String tareasExtraidas = null;
+        String avisoPersistencia = "";
+
         try {
-            // Construir mensaje específico para ChatGPT con la idea del usuario
             String mensajeParaChatGPT = String.format(
                 "El usuario tiene la siguiente idea de proyecto: \"%s\"\n\n" +
                 "Eres un experto en arquitectura de software de proyectos. Por favor, ayúdalo a desarrollar y definir completamente este proyecto. " +
@@ -273,47 +398,135 @@ public class MenuService {
                 "Al final, indica claramente cuál sería el nombre específico del proyecto para usarlo como referencia.",
                 ideaProyecto
             );
-            
+
             logger.info("🤖 Enviando idea del proyecto a ChatGPT para sesión: {}", sessionId);
-            
-            // Usar más tokens para respuestas largas de ChatGPT
-            String respuestaChatGPT = chatGptService.enviarMensajeConTokens(mensajeParaChatGPT, 3000).block();
-            
-            // Guardar el contexto completo de la respuesta
+
+            respuestaChatGPT = chatGptService.enviarMensajeConTokens(mensajeParaChatGPT, 3000).block();
+            esError = esMensajeErrorChatGpt(respuestaChatGPT);
+
             contextoyProyectoSesion.put(sessionId, respuestaChatGPT);
-            
-            // Intentar extraer el nombre del proyecto de la respuesta
-            String nombreProyecto = extraerNombreProyecto(respuestaChatGPT);
-            if (nombreProyecto != null && !nombreProyecto.isEmpty()) {
-                nombreProyectoSesion.put(sessionId, nombreProyecto);
-                logger.info("📝 Proyecto guardado en sesión {}: {}", sessionId, nombreProyecto);
+
+            nombreProyecto = extraerNombreProyecto(respuestaChatGPT);
+            if (nombreProyecto == null || nombreProyecto.isBlank()) {
+                // Fallback: si no hubo nombre desde ChatGPT, derivarlo desde la idea del usuario
+            String derivado = formatearNombreDesdeIdea(ideaProyecto);
+            if (derivado != null && !derivado.isBlank()) {
+                nombreProyecto = derivado;
             }
-            
-            // Extraer y guardar las tareas del proyecto
-            String tareasExtraidas = extraerTareasProyecto(respuestaChatGPT);
+            }
+            nombreProyectoSesion.put(sessionId, nombreProyecto);
+            logger.info("📝 Proyecto guardado en sesión {}: {}", sessionId, nombreProyecto);
+
+            // Extraer y guardar las tareas del proyecto (solo si no hubo error)
+            tareasExtraidas = esError ? null : extraerTareasProyecto(respuestaChatGPT);
             if (tareasExtraidas != null && !tareasExtraidas.isEmpty()) {
                 tareasProyectoSesion.put(sessionId, tareasExtraidas);
                 logger.info("📋 Tareas guardadas en sesión {}: {} tareas encontradas", sessionId, contarTareas(tareasExtraidas));
+
+                // NUEVO: preparar líneas de tareas según haya error o no
+                java.util.List<String> taskLines = (!esError && tareasExtraidas != null && !tareasExtraidas.isBlank())
+                        ? java.util.Arrays.asList(tareasExtraidas.split("\r?\n"))
+                        : java.util.Collections.emptyList();
+
+                // Usar ListaEnlazada para mantener orden
+                ListaEnlazada<String> lista = new ListaEnlazada<>();
+                Trie trie = new Trie();
+
+                for (String linea : taskLines) {
+                    String l = linea.trim();
+                    if (!l.isEmpty()) {
+                        String texto = l.replaceFirst("^\\d+\\.\\s*", "");
+                        lista.agregar(texto);
+                        for (String token : texto.split("\\s+")) {
+                            trie.insertar(token.replaceAll("[^a-zA-Z]", "").toLowerCase());
+                        }
+                    }
+                }
+
+                listaTareasPorSesion.put(sessionId, lista);
+                trieTareasPorSesion.put(sessionId, trie);
+            }
+
+            logger.info("✅ Respuesta recibida de ChatGPT para idea de proyecto y contexto guardado");
+
+            // Usar Grafo para relacionar proyectos consecutivos
+            if (nombreProyecto != null && !nombreProyecto.isEmpty()) {
+                relacionesProyectos.agregarVertice(nombreProyecto);
+
+                String anteriorSesion = ultimoProyectoPorSesion.get(sessionId);
+                if (anteriorSesion != null && !anteriorSesion.equals(nombreProyecto)) {
+                    relacionesProyectos.agregarArista(anteriorSesion, nombreProyecto);
+                }
+                ultimoProyectoPorSesion.put(sessionId, nombreProyecto);
+
+                Long adminUserIdLocal = adminUserIdPorSesion.get(sessionId);
+                if (adminUserIdLocal != null) {
+                    String anteriorAdmin = ultimoProyectoPorAdmin.get(adminUserIdLocal);
+                    if (anteriorAdmin != null && !anteriorAdmin.equals(nombreProyecto)) {
+                        relacionesProyectos.agregarArista(anteriorAdmin, nombreProyecto);
+                    }
+                    ultimoProyectoPorAdmin.put(adminUserIdLocal, nombreProyecto);
+
+                    // Indexar nombre de proyecto en Trie por admin
+                    Trie trieProyectos = trieProyectosPorAdmin.computeIfAbsent(adminUserIdLocal, id -> new Trie());
+                    for (String token : nombreProyecto.split("\\s+")) {
+                        trieProyectos.insertar(token.replaceAll("[^a-zA-Z]", "").toLowerCase());
+                    }
+                }
+            }
+
+            // Persistir en BD si existe adminUserId para esta sesión
+            Long adminUserId = adminUserIdPorSesion.get(sessionId);
+            avisoPersistencia = "";
+
+            // NUEVO: preparar líneas de tareas (vacías si hubo error)
+            java.util.List<String> taskLines = (!esError && tareasExtraidas != null && !tareasExtraidas.isBlank())
+                ? java.util.Arrays.asList(tareasExtraidas.split("\r?\n"))
+                : java.util.Collections.emptyList();
+            if (esError) {
+                avisoPersistencia = persistirProyectoMinimoSiPosible(adminUserId, nombreProyecto, ideaProyecto, sessionId);
+            } else if (adminUserId != null && nombreProyecto != null && !nombreProyecto.isBlank()) {
+                taskLines = (tareasExtraidas != null && !tareasExtraidas.isBlank())
+                ? java.util.Arrays.asList(tareasExtraidas.split("\\r?\\n"))
+                : java.util.Collections.emptyList();
+                // Preview de las primeras tareas (si existen)
+                String preview = taskLines.isEmpty()
+                        ? "(sin tareas)"
+                        : String.join(" | ", taskLines.subList(0, Math.min(3, taskLines.size())));
+                logger.info("Persistencia -> preview primeras tareas: {}", preview);
+
+                String descripcionParaBD = respuestaChatGPT; // solo si NO hubo error
+                try {
+                    projectService.createProjectForAdmin(
+                            adminUserId,
+                            nombreProyecto,
+                            descripcionParaBD,
+                            taskLines
+                    );
+                    avisoPersistencia = "✅ Proyecto guardado en base de datos.\n";
+                } catch (Exception ex) {
+                    logger.error("Error al persistir proyecto para adminUserId={} sesión={}: {}", adminUserId, sessionId, ex.getMessage(), ex);
+                    avisoPersistencia = "❗ No se pudo guardar en base de datos: " + ex.getMessage() + "\n";
+                }
+            } else {
+                logger.warn("No se pudo persistir proyecto: adminUserId ausente o nombreProyecto vacío para sesión {}", sessionId);
+                avisoPersistencia = "ℹ️ No se guardó en BD: falta userId o nombre de proyecto.\n";
             }
             
-            logger.info("✅ Respuesta recibida de ChatGPT para idea de proyecto y contexto guardado");
-            
-            return "🚀 **PROYECTO DESARROLLADO**\n\n" + respuestaChatGPT + "\n\n" +
-                   "✅ **Proyecto creado exitosamente**\n" +
+            String cuerpoRespuesta = esError
+                    ? String.format("🧭 Desarrollo básico a partir de tu idea.\n\n**Nombre del proyecto:** %s\n\n**Idea original:** %s\n", nombreProyecto, ideaProyecto)
+                    : respuestaChatGPT;
+
+            return "🚀 **PROYECTO DESARROLLADO**\n\n" + cuerpoRespuesta + "\n\n" +
+                   avisoPersistencia +
                    "🎯 **Siguiente paso:** Puedes gestionar las tareas usando las opciones del menú principal\n\n" +
                    "MOSTRAR_MENU_PRINCIPAL";
-            
+
         } catch (Exception e) {
             logger.error("❌ Error al comunicarse con ChatGPT para procesar idea de proyecto", e);
             return "🚀 **DESARROLLO DE PROYECTO**\n\n" +
                    "❌ No pude conectar con ChatGPT en este momento.\n\n" +
                    "💡 **Tu idea de proyecto:** " + ideaProyecto + "\n\n" +
-                   "**Guía básica para desarrollar tu proyecto:**\n" +
-                   "1. Define el objetivo principal de tu idea\n" +
-                   "2. Identifica tu público objetivo\n" +
-                   "3. Establece un presupuesto estimado\n" +
-                   "4. Define las fechas de inicio y fin\n" +
-                   "5. Crea la lista de características principales\n\n" +
                    "MOSTRAR_MENU_PRINCIPAL";
         }
     }
@@ -328,11 +541,24 @@ public class MenuService {
         String nombreProyecto = nombreProyectoSesion.get(sessionId);
         
         if (tareasExistentes != null && !tareasExistentes.isEmpty()) {
-            // Hay tareas en la sesión, mostrarlas y pedir nueva tarea
             String tituloProyecto = nombreProyecto != null ? nombreProyecto : "Proyecto definido anteriormente";
             int numeroTareas = contarTareas(tareasExistentes);
-            
-           
+    
+            // NUEVO: preferir ListaEnlazada si existe
+            ListaEnlazada<String> lista = listaTareasPorSesion.get(sessionId);
+            String tareasParaMostrar = tareasExistentes;
+            if (lista != null && !lista.estaVacia()) {
+                StringBuilder sb = new StringBuilder();
+                int i = 1;
+                for (String t : lista) {
+                    // Normalizamos para evitar numeración duplicada
+                    String texto = t.replaceFirst("^\\d+\\.\\s*", "");
+                    sb.append(i++).append(". ").append(texto).append("\n");
+                }
+                tareasParaMostrar = sb.toString().trim();
+                numeroTareas = lista.tamaño();
+            }
+    
             return String.format(
                 "📋 **GESTIÓN DE TAREAS: %s**\n\n" +
                 "📊 **Tareas actuales:** %d tareas\n\n" +
@@ -342,9 +568,8 @@ public class MenuService {
                 "✍️ Escribe la descripción de la nueva tarea que quieres agregar al proyecto.\n\n" +
                 "📝 **Ejemplo:** \"Configurar base de datos PostgreSQL\" o \"Implementar sistema de autenticación\"\n\n" +
                 "🔄 **La nueva tarea se agregará automáticamente a la lista existente.**",
-                tituloProyecto, numeroTareas, tareasExistentes
+                tituloProyecto, numeroTareas, tareasParaMostrar
             );
-            
         } else {
             // No hay tareas, verificar si hay contexto del proyecto
             String contextoProyecto = contextoyProyectoSesion.get(sessionId);
@@ -375,6 +600,29 @@ public class MenuService {
     }
     
     /**
+     * Sugiere tareas basadas en un prefijo usando el índice Trie
+     */
+    private String sugerirTareasPorPrefijo(String prefijo, String sessionId) {
+        Trie trie = trieTareasPorSesion.get(sessionId);
+        if (trie == null || prefijo == null || prefijo.isBlank()) {
+            return "🔎 **Sugerencias**\n\nNo hay índice de tareas para esta sesión o el prefijo está vacío.\n\nMOSTRAR_MENU_PRINCIPAL";
+        }
+
+        ListaEnlazada<String> resultados = trie.buscarPorPrefijo(prefijo);
+        if (resultados.estaVacia()) {
+            return "🔎 **Sugerencias**\n\nNo se encontraron tareas que coincidan con el prefijo '" + prefijo + "'.\n\nMOSTRAR_MENU_PRINCIPAL";
+        }
+
+        StringBuilder sb = new StringBuilder("🔎 **Sugerencias por prefijo:** '" + prefijo + "'\n\n");
+        int i = 1;
+        for (String r : resultados) {
+            sb.append(i++).append(".").append(r).append("\n");
+        }
+        sb.append("\nMOSTRAR_MENU_PRINCIPAL");
+        return sb.toString();
+    }
+
+    /**
      * Versión web de crear tareas con datos específicos y sesión específica
      */
     private String crearTareasProyectoWebConDatosYSesion(String datos, String sessionId) {
@@ -382,7 +630,20 @@ public class MenuService {
         
         // Si hay datos específicos, agregar como nueva tarea
         if (datos != null && !datos.trim().isEmpty()) {
-            return agregarNuevaTareaASesion(datos.trim(), sessionId);
+            String valor = datos.trim();
+            // Si es número: marcar como completada; si no: agregar o sugerir
+            if (valor.matches("\\d+")) {
+                int numeroTarea = Integer.parseInt(valor);
+                return marcarTareaComoCompletada(numeroTarea, sessionId);
+            } else {
+                // Si el usuario pide sugerencias por prefijo: "sugerir: pre"
+                if (valor.toLowerCase().startsWith("sugerir:")) {
+                    String prefijo = valor.substring("sugerir:".length()).trim().toLowerCase();
+                    return sugerirTareasPorPrefijo(prefijo, sessionId);
+                }
+                // Caso normal: agregar como nueva tarea
+                return agregarNuevaTareaASesion(valor, sessionId);
+            }
         }
         
         // Si no hay datos específicos, mostrar gestión de tareas
@@ -486,15 +747,54 @@ public class MenuService {
                 tareasConEstado
             );
         } else {
-            // No hay tareas en la sesión
+            // Fallback: consultar tareas persistidas en BD para el usuario de esta sesión
+            Long adminUserId = adminUserIdPorSesion.get(sessionId);
+            if (adminUserId != null) {
+                java.util.List<com.ejemplo.chatgptwebhook.entities.Project> proyectos =
+                        projectService.getProjectsByAdmin(adminUserId);
+                if (proyectos != null && !proyectos.isEmpty()) {
+                    com.ejemplo.chatgptwebhook.entities.Project ultimo =
+                            proyectos.get(proyectos.size() - 1); // último por id/orden de inserción
+                    java.util.List<com.ejemplo.chatgptwebhook.entities.Task> tareasDb =
+                            projectService.getTasksByProjectId(ultimo.getId());
+
+                    if (tareasDb != null && !tareasDb.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        int i = 1;
+                        for (com.ejemplo.chatgptwebhook.entities.Task t : tareasDb) {
+                            String titulo = (t.getTitle() != null) ? t.getTitle() : "(sin título)";
+                            String estado = (t.getStatus() != null) ? t.getStatus() : "pendiente";
+                            sb.append(i++).append(". ").append(titulo)
+                              .append(" - Estado: ").append(estado).append("\n");
+                        }
+
+                        return String.format(
+                            "📋 **CONSULTAR TAREAS: %s**\n\n" +
+                            "📊 **Tareas persistidas en BD:** %d\n\n" +
+                            "**Lista de tareas (BD):**\n%s\n\n" +
+                            "MOSTRAR_MENU_PRINCIPAL",
+                            ultimo.getName(),
+                            tareasDb.size(),
+                            sb.toString().trim()
+                        );
+                    }
+
+                    return String.format(
+                        "📋 **CONSULTAR TAREAS: %s**\n\n" +
+                        "❗ No hay tareas persistidas en BD para este proyecto.\n\n" +
+                        "MOSTRAR_MENU_PRINCIPAL",
+                        ultimo.getName()
+                    );
+                }
+
+                return "📋 **CONSULTAR TAREAS DEL PROYECTO**\n\n" +
+                       "❗ No hay proyectos persistidos en BD para tu usuario.\n\n" +
+                       "MOSTRAR_MENU_PRINCIPAL";
+            }
+
             return "📋 **CONSULTAR TAREAS DEL PROYECTO**\n\n" +
-                   "❗ **No hay tareas guardadas en esta sesión.**\n\n" +
-                   "💡 **Para consultar tareas:**\n" +
-                   "1. Primero selecciona **'1. Crear un proyecto'** para definir tu proyecto con ChatGPT\n" +
-                   "2. El sistema generará automáticamente las 10 tareas principales\n" +
-                   "3. Después podrás consultar las tareas generadas\n\n" +
-                   "🔄 **Alternativamente:**\n" +
-                   "Puedes usar el endpoint `POST /api/menu/procesar/3/datos` con el nombre específico del proyecto.";
+                   "❗ No hay tareas guardadas en esta sesión y no se detectó usuario logueado.\n\n" +
+                   "MOSTRAR_MENU_PRINCIPAL";
         }
     }
     
@@ -622,38 +922,43 @@ public class MenuService {
     /**
      * Extrae el nombre del proyecto de la respuesta de ChatGPT
      */
-    private String extraerNombreProyecto(String respuestaChatGPT) {
-        // Intentar extraer el nombre del proyecto de la respuesta
-        // Buscar patrones comunes como "proyecto llamado", "nombre del proyecto", etc.
-        
-        if (respuestaChatGPT == null || respuestaChatGPT.isEmpty()) {
-            return null;
-        }
-        
-        // Patrones para buscar el nombre del proyecto
-        String[] patrones = {
-            "proyecto llamado \"([^\"]+)\"",
-            "proyecto: ([^\n]+)",
-            "nombre del proyecto: ([^\n]+)",
-            "proyecto \"([^\"]+)\"",
-            "llamado \"([^\"]+)\"",
-            "proyecto ([A-Z][^,.\\n]+)"
+    private String extraerNombreProyecto(String respuesta) {
+        if (respuesta == null) return null;
+        String[] lineas = respuesta.split("\\r?\\n");
+
+        java.util.regex.Pattern[] patrones = new java.util.regex.Pattern[] {
+            java.util.regex.Pattern.compile("(?i)^\\s*nombre\\s+(?:del\\s+)?proyecto\\s*[:\\-]\\s*(.+)\\s*$"),
+            java.util.regex.Pattern.compile("(?i)^\\s*proyecto\\s*[:\\-]\\s*(.+)\\s*$"),
+            java.util.regex.Pattern.compile("(?i)^\\s*título\\s*[:\\-]\\s*(.+)\\s*$")
         };
-        
-        for (String patron : patrones) {
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(patron);
-            java.util.regex.Matcher matcher = pattern.matcher(respuestaChatGPT);
-            if (matcher.find()) {
-                String nombreEncontrado = matcher.group(1).trim();
-                if (!nombreEncontrado.isEmpty()) {
-                    logger.info("📝 Nombre del proyecto extraído: {}", nombreEncontrado);
-                    return nombreEncontrado;
+
+        for (String linea : lineas) {
+            String l = linea.trim();
+            for (java.util.regex.Pattern p : patrones) {
+                java.util.regex.Matcher m = p.matcher(l);
+                if (m.find()) {
+                    String nombre = m.group(1).trim();
+                    if (!nombre.isEmpty()) {
+                        nombre = nombre.replaceAll("\\s*\\.$", "");
+                        return nombre;
+                    }
                 }
             }
         }
-        
-        logger.info("📝 No se pudo extraer el nombre del proyecto automáticamente");
-        return "Proyecto definido con ChatGPT";
+
+        // Heurística: última línea si parece un título y no es viñeta ni mensaje de error/genérico
+        String ultima = lineas[lineas.length - 1].trim();
+        if (!ultima.isEmpty() && !ultima.matches("^(\\d+\\.|[\\-*]).*")) {
+            String uLower = ultima.toLowerCase();
+            if (!uLower.contains("proyecto definido con chatgpt")
+                    && !uLower.contains("proyecto generado por chatgpt")
+                    && !uLower.contains("error")) {
+                return ultima;
+            }
+        }
+
+        // Importante: devolver null para que el flujo use el nombre derivado de la idea del usuario
+        return null;
     }
     
     /**
@@ -746,6 +1051,24 @@ public class MenuService {
         return tareasFormateadas.toString().trim();
     }
     
+    private String persistirProyectoMinimoSiPosible(Long adminUserId, String nombreProyecto, String ideaProyecto, String sessionId) {
+        if (adminUserId != null && nombreProyecto != null && !nombreProyecto.isBlank()) {
+            try {
+                projectService.createProjectForAdmin(
+                        adminUserId,
+                        nombreProyecto,
+                        ideaProyecto,
+                        java.util.Collections.emptyList()
+                );
+                return "✅ Proyecto mínimo guardado en BD (ChatGPT falló, sin tareas).\n";
+            } catch (Exception ex) {
+                logger.error("Error al persistir proyecto mínimo para adminUserId={} sesión={}: {}", adminUserId, sessionId, ex.getMessage(), ex);
+                return "❗ No se pudo guardar en base de datos: " + ex.getMessage() + "\n";
+            }
+        }
+        return "ℹ️ No se guardó en BD porque hubo un error al generar el proyecto.\n";
+    }
+    
     /**
      * Agrega una nueva tarea a las tareas existentes en la sesión
      */
@@ -759,46 +1082,33 @@ public class MenuService {
                    "💡 Primero debes crear un proyecto usando la **opción 1**.\n\n" +
                    "MOSTRAR_MENU_PRINCIPAL";
         }
-        
-        // Obtener tareas existentes
-        String tareasExistentes = tareasProyectoSesion.get(sessionId);
-        
-        // Calcular el número de la nueva tarea
-        int numeroNuevaTarea = 1;
-        if (tareasExistentes != null && !tareasExistentes.isEmpty()) {
-            numeroNuevaTarea = contarTareas(tareasExistentes) + 1;
+
+        // Encolar tarea y drenar en orden
+        Cola<String> cola = colaTareasPendientesPorSesion.computeIfAbsent(sessionId, s -> new Cola<>());
+        cola.encolar(nuevaTarea);
+
+        ListaEnlazada<String> lista = listaTareasPorSesion.get(sessionId);
+        if (lista == null) {
+            lista = new ListaEnlazada<>();
+            listaTareasPorSesion.put(sessionId, lista);
         }
-        
-        // Formatear la nueva tarea
-        String tareaFormateada = String.format("%d. %s", numeroNuevaTarea, nuevaTarea);
-        
-        // Agregar la nueva tarea a las existentes
-        String tareasActualizadas;
-        if (tareasExistentes != null && !tareasExistentes.isEmpty()) {
-            tareasActualizadas = tareasExistentes + "\n" + tareaFormateada;
-        } else {
-            tareasActualizadas = tareaFormateada;
+
+        Trie trie = trieTareasPorSesion.computeIfAbsent(sessionId, s -> new Trie());
+
+        while (!cola.estaVacia()) {
+            String tarea = cola.desencolar();
+            lista.agregar(tarea);
+            for (String token : tarea.split("\\s+")) {
+                trie.insertar(token.replaceAll("[^a-zA-Z]", "").toLowerCase());
+            }
+            String prev = tareasProyectoSesion.get(sessionId);
+            String nuevas = (prev == null || prev.trim().isEmpty()) ? ("1. " + tarea) : prev + "\n" + (contarTareas(prev) + 1) + ". " + tarea;
+            tareasProyectoSesion.put(sessionId, nuevas);
         }
-        
-        // Guardar las tareas actualizadas en la sesión
-        tareasProyectoSesion.put(sessionId, tareasActualizadas);
-        
-        logger.info("✅ Nueva tarea agregada. Total de tareas en sesión {}: {}", sessionId, contarTareas(tareasActualizadas));
-        
-        return String.format(
-            "✅ **TAREA AGREGADA EXITOSAMENTE**\n\n" +
-            "📋 **Proyecto:** %s\n" +
-            "➕ **Nueva tarea #%d:** %s\n\n" +
-            "📊 **Total de tareas:** %d\n\n" +
-            "**Lista actualizada:**\n%s\n\n" +
-            "💡 **Puedes:**\n" +
-            "• Seleccionar **'2. Crear tareas'** para agregar otra tarea\n" +
-            "• Seleccionar **'3. Consultar tareas'** para ver todas las tareas\n" +
-            "• Continuar con tu proyecto\n\n" +
-            "MOSTRAR_MENU_PRINCIPAL",
-            nombreProyecto, numeroNuevaTarea, nuevaTarea, contarTareas(tareasActualizadas), tareasActualizadas
-        );
+
+        return "✅ **Tarea agregada**: " + nuevaTarea + "\n\nMOSTRAR_MENU_PRINCIPAL";
     }
+
     
     /**
      * Marca una tarea como completada en la sesión

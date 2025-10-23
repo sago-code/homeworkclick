@@ -28,6 +28,7 @@ public class UsuarioController {
     public ResponseEntity<?> registrarUsuario(@RequestBody UsuarioRequest request) {
         try {
             Usuario usuario = usuarioService.registrarUsuario(request);
+            // Devuelve el DTO del usuario; el rol ya se guardó en la relación user_roles
             return ResponseEntity.ok(UsuarioDto.fromEntity(usuario));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

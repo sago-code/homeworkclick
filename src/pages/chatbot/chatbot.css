@@ -2190,22 +2190,17 @@ body::before {
    ============================================ */
 .explanation-panel {
     position: fixed;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 500px; /* Aumentado de 380px a 500px */
-    height: 85vh; /* Aumentado de 80vh a 85vh */
-    max-height: 90vh;
-    background: white;
-    border-radius: 20px;
-    padding: 25px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25); /* Sombra más pronunciada */
-    z-index: 1000; /* Mayor z-index para estar por encima */
-    overflow-y: auto;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    right: 24px;
+    top: 24px;
+    bottom: 24px;
+    width: min(360px, 86vw);
+    background: var(--bg-glass);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-2xl);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    z-index: 950;
 }
 
 .explanation-panel.hidden {
@@ -2217,50 +2212,41 @@ body::before {
 /* Cabecera del panel mejorada */
 .panel-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #e9ecef;
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
-    border-radius: 20px 20px 0 0;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 .panel-header h2 {
-    color: #2c3e50;
-    font-size: 22px; /* Tamaño de fuente aumentado */
+    font-size: var(--font-size-base);
     margin: 0;
-    font-weight: 600;
 }
 
 .close-panel {
-    background: #e74c3c;
-    color: white;
-    border: none;
-    width: 35px; /* Aumentado de 30px */
-    height: 35px; /* Aumentado de 30px */
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
     cursor: pointer;
-    font-size: 20px; /* Aumentado de 18px */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.2s ease;
+    transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .close-panel:hover {
-    background: #c0392b;
-    transform: scale(1.1);
+    background: var(--bg-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 /* Contenido del panel */
 .panel-content {
-    flex: 1;
+    padding: var(--spacing-md);
+    height: calc(100% - 60px);
     overflow-y: auto;
-    padding: 5px;
+    color: var(--text-secondary);
 }
 
 /* Mejoras para las estructuras de datos */
@@ -2365,48 +2351,49 @@ body::before {
 }
 
 /* Mejoras de responsividad para el panel */
-@media (max-width: 1200px) {
-    .explanation-panel {
-        width: 450px;
-        left: 15px;
-    }
+.chat-messages {
+    scroll-behavior: smooth;
+}
+.chat-messages::-webkit-scrollbar {
+    width: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.chat-messages::-webkit-scrollbar-track {
+    background: transparent;
 }
 
+.chat-actions .btn-icon {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    transition: transform var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.chat-actions .btn-icon:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Mejora de responsividad del panel y del contenedor del chat sin romper tu layout fijo */
+.chatbot:not(.minimized) {
+    height: auto;
+}
 @media (max-width: 1024px) {
     .explanation-panel {
-        width: 400px;
-        left: 10px;
-    }
-    
-    .process-step {
-        width: 100%;
-        margin-bottom: 20px;
-    }
-    
-    .process-step:not(:last-child):after {
-        content: "↓";
-        right: 50%;
-        top: auto;
-        bottom: -25px;
-        transform: translateX(50%);
-    }
-    
-    .process-flow {
-        flex-direction: column;
+        right: 16px;
+        top: 16px;
+        bottom: 16px;
     }
 }
-
 @media (max-width: 768px) {
     .explanation-panel {
-        width: 90%;
-        left: 5%;
-        top: 10%;
-        transform: none;
-        height: 80vh;
-    }
-    
-    .explanation-panel.hidden {
-        transform: translateY(-100%);
+        position: static;
+        width: 100%;
+        margin: var(--spacing-sm) auto 0;
+        border-radius: var(--border-radius-lg);
     }
 }
 

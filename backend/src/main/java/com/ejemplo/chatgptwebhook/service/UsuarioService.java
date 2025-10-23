@@ -3,10 +3,15 @@ package com.ejemplo.chatgptwebhook.service;
 import com.ejemplo.chatgptwebhook.datastructures.TablaHash;
 import com.ejemplo.chatgptwebhook.datastructures.Cola;
 import com.ejemplo.chatgptwebhook.entities.Usuario;
+import com.ejemplo.chatgptwebhook.entities.Role;
+import com.ejemplo.chatgptwebhook.entities.UserRole;
 import com.ejemplo.chatgptwebhook.model.UsuarioRequest;
 import com.ejemplo.chatgptwebhook.repository.UsuarioRepository;
+import com.ejemplo.chatgptwebhook.repository.RoleRepository;
+import com.ejemplo.chatgptwebhook.repository.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,12 +24,20 @@ public class UsuarioService {
     @Autowired
     private PasswordService passwordService;
     
+    // NUEVO: repositorios de rol
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+    
     // Tabla hash para almacenar usuarios por email (para login rápido)
     private TablaHash<String, Usuario> usuariosPorEmail = new TablaHash<>();
     
     // Cola para procesamiento asíncrono de correos de verificación
     private Cola<String> colaCorreosVerificacion = new Cola<>();
 
+    @Transactional
     public Usuario registrarUsuario(UsuarioRequest request) {
         // Verificar si el email ya existe
         if (usuariosPorEmail.containsKey(request.getEmail())) {
@@ -48,7 +61,18 @@ public class UsuarioService {
         
         // Agregar a la cola de verificación de correos
         colaCorreosVerificacion.encolar(usuarioGuardado.getEmail());
-        
+
+        // NUEVO: asignar rol (por defecto EMPLEADO si no se envía)
+        String roleName = (request.getRole() == null || request.getRole().isBlank())
+                ? "EMPLEADO"
+                : request.getRole().toUpperCase();
+
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseGet(() -> roleRepository.save(new Role(roleName)));
+
+        UserRole userRole = new UserRole(usuarioGuardado, role);
+        userRoleRepository.save(userRole);
+
         return usuarioGuardado;
     }
 

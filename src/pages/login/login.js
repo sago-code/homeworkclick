@@ -29,7 +29,7 @@ export default async function Login() {
 
     const writeUserToStorage = (user) => {
         const normalized = user ? {
-            id: user.id,
+            id: Number(user.id),
             email: user.email,
             nombre: user.nombre,
             token: user.token
@@ -38,6 +38,7 @@ export default async function Login() {
         if (payload) {
             sessionStorage.setItem('user', payload);
             localStorage.setItem('user', payload);
+            console.log('🗄️ Usuario guardado en storage:', normalized);
         }
     };
 
@@ -104,24 +105,48 @@ export default async function Login() {
                 email: document.getElementById('correo-reg').value,
                 password: document.getElementById('contraseña-reg').value,
                 address: document.getElementById('direccion').value,
-                phone: document.getElementById('telefono').value
+                phone: document.getElementById('telefono').value,
+                // Nuevo: enviar rol por defecto 'empleado'
+                role: (document.getElementById('rol')?.value || 'empleado')
             };
 
             try {
                 const resultado = await registrarUsuario(datosUsuario);
-                console.log('Resultado del registro:', resultado.id);
+                console.log('Resultado del registro:', resultado?.id);
+
                 if (resultado && resultado.id) {
-                    mensajeExitoRegistro.style.color = 'green';
-                    mensajeExitoRegistro.textContent = 'Usuario registrado con éxito ✅';
+                    // Auto-login con las credenciales recién registradas
+                    const loginPayload = {
+                        email: datosUsuario.email,
+                        password: datosUsuario.password
+                    };
+                    const loginResult = await loginUsuario(loginPayload);
+
+                    if (loginResult && loginResult.id) {
+                        writeUserToStorage(loginResult);
+                        mensajeExitoRegistro.style.color = 'green';
+                        mensajeExitoRegistro.textContent = 'Usuario registrado y logueado con éxito ✅';
+                        setState({ success: 'ok', loading: false });
+
+                        navigateTo('/chatbot');
+                        router();
+                        window.location.reload();
+                        return;
+                    } else {
+                        mensajeExitoRegistro.style.color = 'red';
+                        mensajeExitoRegistro.textContent = loginResult?.message || 'Error al iniciar sesión tras el registro ❌';
+                    }
                 } else {
                     mensajeExitoRegistro.style.color = 'red';
                     mensajeExitoRegistro.textContent = resultado?.message || 'Error al registrar usuario ❌';
                 }
             } catch (error) {
+                console.error('Error al registrar usuario:', error);
                 mensajeExitoRegistro.style.color = 'red';
                 mensajeExitoRegistro.textContent = 'Error al registrar usuario ❌';
             } finally {
                 formRegistro.reset();
+                // Si no se logra auto-login, volver al login visualmente
                 setTimeout(() => activarLoginForm(), 1500);
             }
         });

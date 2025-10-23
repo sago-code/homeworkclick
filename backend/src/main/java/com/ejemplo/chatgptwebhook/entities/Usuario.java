@@ -1,7 +1,7 @@
 package com.ejemplo.chatgptwebhook.entities;
 
 import java.sql.Timestamp;
-
+import java.util.List;
 import jakarta.persistence.*;
 
 @Entity
@@ -48,4 +48,15 @@ public class Usuario {
     public void setCreated_at(Timestamp created_at) { this.created_at = created_at; }
     public Timestamp getUpdated_at() { return updated_at; }
     public void setUpdated_at(Timestamp updated_at) { this.updated_at = updated_at; }
+
+    // Relación opcional para navegar desde Usuario a sus roles
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserRole> roles;
+
+    // Getters/Setters de lista de roles
+    public List<UserRole> getRoles() { return roles; }
+    public void setRoles(List<UserRole> roles) { this.roles = roles; }
+    // Navegación opcional: proyectos creados por el usuario (admin)
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = false)
+    private java.util.List<Project> projects;
 }

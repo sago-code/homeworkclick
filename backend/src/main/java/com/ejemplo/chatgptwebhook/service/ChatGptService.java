@@ -22,14 +22,22 @@ import java.util.Map;
 public class ChatGptService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatGptService.class);
-    
+
     private final WebClient webClient;
     @SuppressWarnings("unused")
     private final String apiKey;
+    private final String model;
 
     public ChatGptService(@Value("${openai.api.key}") String apiKey,
-                         @Value("${openai.api.url:https://api.openai.com/v1/chat/completions}") String apiUrl) {
+                          @Value("${openai.api.url:https://api.openai.com/v1/chat/completions}") String apiUrl,
+                          @Value("${openai.model:gpt-3.5-turbo}") String model) {
         this.apiKey = apiKey;
+        this.model = model;
+
+        if (apiKey == null || apiKey.isBlank()) {
+            logger.error("API key de OpenAI no configurada (openai.api.key).");
+        }
+
         this.webClient = WebClient.builder()
                 .baseUrl(apiUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -37,33 +45,13 @@ public class ChatGptService {
                 .build();
     }
 
-    /**
-     * Envía un mensaje a ChatGPT y obtiene la respuesta
-     * 
-     * @param mensaje El mensaje del usuario
-     * @return La respuesta de ChatGPT
-     */
-    public Mono<String> enviarMensaje(String mensaje) {
-        return enviarMensajeConTokens(mensaje, 2000);
-    }
-    
-    /**
-     * Envía un mensaje a ChatGPT y obtiene la respuesta con un límite específico de tokens
-     * 
-     * @param mensaje El mensaje del usuario
-     * @param maxTokens Límite máximo de tokens para la respuesta
-     * @return La respuesta de ChatGPT
-     */
     public Mono<String> enviarMensajeConTokens(String mensaje, int maxTokens) {
         logger.info("Enviando mensaje a ChatGPT con {} tokens máximo: {}", maxTokens, mensaje);
-
-        // Crear la petición para ChatGPT
-        // Construir petición inmutable
         List<Map<String, String>> messages = List.of(
             Map.of("role", "user", "content", mensaje)
         );
         ChatGptRequest request = new ChatGptRequest(
-            "gpt-3.5-turbo",
+            model,
             messages,
             maxTokens,
             0.7
@@ -95,5 +83,10 @@ public class ChatGptService {
                     logger.error("Error inesperado al comunicarse con ChatGPT", ex);
                     return Mono.just("Ocurrió un error inesperado. Por favor, inténtalo más tarde.");
                 });
+    }
+
+    // Método repuesto: wrapper con tokens por defecto
+    public Mono<String> enviarMensaje(String mensaje) {
+        return enviarMensajeConTokens(mensaje, 512);
     }
 }
