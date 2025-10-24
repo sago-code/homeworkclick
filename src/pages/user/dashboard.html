@@ -1,0 +1,195 @@
+<section class="admin-shell">
+  <!-- Importa el CSS externo de esta vista -->
+  <link rel="stylesheet" href="/src/pages/admin/dashboard.css" />
+  <link rel="stylesheet" href="/src/pages/user/dashboard.css" />
+
+  <header class="admin-topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <h1>Panel de Administrador</h1>
+    </div>
+    <div class="top-actions">
+      <button class="btn safe" id="btn-new-user">+ Usuario</button>
+      <button class="btn warn" id="btn-new-project">+ Proyecto</button>
+      <button class="btn primary" id="btn-new-task">+ Tarea</button>
+      <button class="btn" id="btn-logout">Salir</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Col 1: Usuarios -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Usuarios</h3>
+          <p class="card-sub">Gestión visual de miembros</p>
+        </div>
+        <button class="btn safe" id="btn-new-user-2">Nuevo</button>
+      </div>
+      <div class="card-body">
+        <div class="users" id="users-list"></div>
+      </div>
+    </section>
+
+    <!-- Col 2: Kanban + métricas -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Tareas</h3>
+          <p class="card-sub">Organiza por estado</p>
+        </div>
+        <button class="btn primary" id="btn-new-task-2">Nueva tarea</button>
+      </div>
+      <div class="card-body">
+        <div class="stats" id="stats"></div>
+        <div class="kanban">
+          <div class="col">
+            <h4>Por hacer</h4>
+            <div id="col-todo"></div>
+          </div>
+          <div class="col">
+            <h4>En progreso</h4>
+            <div id="col-doing"></div>
+          </div>
+          <div class="col">
+            <h4>Hechas</h4>
+            <div id="col-done"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Col 3: Proyectos + gráficos -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Proyectos</h3>
+          <p class="card-sub">Listado y actividad</p>
+        </div>
+        <button class="btn warn" id="btn-new-project-2">Nuevo</button>
+      </div>
+      <div class="card-body">
+        <div class="projects" id="projects-list"></div>
+        <div class="chart-wrap" style="margin-top:12px">
+          <div class="chart">
+            <h4>Tareas por proyecto</h4>
+            <div id="chart-projects"></div>
+          </div>
+          <div class="chart">
+            <h4>Tareas por usuario</h4>
+            <div id="chart-users"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Nuevo Usuario -->
+  <div class="modal" id="modal-user">
+    <div class="modal-card">
+      <div class="modal-head">
+        <strong>Crear usuario</strong>
+        <button class="btn" data-close="#modal-user">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div>
+            <label>Nombre</label>
+            <input class="input" id="u-name" placeholder="Jane Doe"/>
+          </div>
+          <div>
+            <label>Email</label>
+            <input class="input" id="u-email" placeholder="jane@ejemplo.com"/>
+          </div>
+          <div>
+            <label>Rol</label>
+            <select id="u-role">
+              <option value="user">Usuario</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div>
+            <label>Área</label>
+            <input class="input" id="u-area" placeholder="Producto, Soporte, etc."/>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" data-close="#modal-user">Cancelar</button>
+          <button class="btn safe" id="u-save">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Nuevo Proyecto -->
+  <div class="modal" id="modal-project">
+    <div class="modal-card">
+      <div class="modal-head">
+        <strong>Crear proyecto</strong>
+        <button class="btn" data-close="#modal-project">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div>
+            <label>Nombre</label>
+            <input class="input" id="p-name" placeholder="Lanzamiento MVP"/>
+          </div>
+          <div>
+            <label>Owner</label>
+            <select id="p-owner"></select>
+          </div>
+          <div class="full">
+            <label>Descripción</label>
+            <textarea id="p-desc" placeholder="Resumen del proyecto..."></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" data-close="#modal-project">Cancelar</button>
+          <button class="btn warn" id="p-save">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Nueva Tarea -->
+  <div class="modal" id="modal-task">
+    <div class="modal-card">
+      <div class="modal-head">
+        <strong>Crear tarea</strong>
+        <button class="btn" data-close="#modal-task">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div>
+            <label>Título</label>
+            <input class="input" id="t-title" placeholder="Configurar CI/CD"/>
+          </div>
+          <div>
+            <label>Proyecto</label>
+            <select id="t-project"></select>
+          </div>
+          <div>
+            <label>Asignar a</label>
+            <select id="t-assignee"></select>
+          </div>
+          <div>
+            <label>Estado</label>
+            <select id="t-status">
+              <option value="todo">Por hacer</option>
+              <option value="doing">En progreso</option>
+              <option value="done">Hecha</option>
+            </select>
+          </div>
+          <div class="full">
+            <label>Descripción</label>
+            <textarea id="t-desc" placeholder="Detalles de la tarea..."></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" data-close="#modal-task">Cancelar</button>
+          <button class="btn primary" id="t-save">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

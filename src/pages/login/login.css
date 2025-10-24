@@ -184,4 +184,14 @@ body {
         padding: 20px 5px;
         box-sizing: border-box;
     }
+
+    .caja select {
+    width: 300px;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: white;
+    color: #333;
+    }
 }
