@@ -1,5 +1,9 @@
 import { navigateTo } from '../../main';
-import './chatbot.css'
+import './chatbot.css';
+import { injectMenu } from '../../components/menu/menu.js';
+
+// Bootstrap del menú al cargar este módulo (espera hasta que exista #appMenu)
+injectMenu('appMenu');
 
 export default class ChatbotApp {
   constructor() {

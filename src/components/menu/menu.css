@@ -1,0 +1,227 @@
+:root {
+    --app-header-height: 64px;
+}
+
+/* Header fijo arriba */
+.app-header {    
+    position: absolute;/* usa sticky si prefieres que se oculte al hacer scroll */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(22, 32, 52, 0.6);
+    backdrop-filter: saturate(160%) blur(8px);
+    color: #fff;
+}
+
+/* El menú como barra superior (no “píldora” centrada) */
+.app-header .app-menu {
+    position: static;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: var(--app-header-height);
+}
+
+/* Layout interno de la barra */
+.app-header .menu-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+/* Lista horizontal en desktop */
+.app-header .menu-items {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 8px 0;
+    cursor: pointer;
+}
+
+/* Desplaza el contenido para que no quede debajo del header */
+.app-header + section {
+    padding-top: var(--app-header-height);
+}
+
+/* Móvil: usa el toggle */
+@media (max-width: 768px) {
+    .app-header .menu-items {
+        display: none;
+    }
+    .app-header .menu-items.open {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 0 12px;
+    }
+}
+
+/* Resto de estilos del menú */
+.app-menu {
+    top: 0;
+    z-index: 1000;
+    background: var(--menu-bg);
+    color: var(--menu-fg);
+    width: 100%;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    margin: 0;
+    max-width: 1100px;
+    animation: menuFadeIn 300ms ease-out both;
+}
+
+.app-menu > .menu-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.menu-brand {
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menu-brand .brand-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--menu-accent);
+    border-radius: 50%;
+}
+
+.menu-toggle {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--menu-fg-muted);
+    color: var(--menu-fg);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 200ms ease, transform 200ms ease;
+}
+.menu-toggle:hover { background: var(--menu-hover); transform: translateY(-1px); }
+
+.menu-items {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+}
+
+.menu-items.open {
+    display: block;
+}
+
+.menu-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.menu-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--menu-fg);
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 8px;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+    font-weight: 500;
+}
+.menu-link:hover { background: var(--menu-hover); transform: translateY(-1px); }
+.menu-link.active { background: rgba(255,255,255,0.18); color: #fff; }
+
+.menu-right { margin-left: 6px; }
+.menu-link.logout {
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+}
+.menu-link.logout:hover {
+    background: rgba(255,80,80,0.18);
+    border-color: rgba(255,80,80,0.35);
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+    .app-menu { border-radius: 10px; margin: 8px auto 12px; }
+    .app-menu > .menu-inner { padding: 10px 12px; }
+}
+@media (max-width: 768px) {
+    .menu-toggle { display: inline-block; }
+    .menu-items {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        background: rgba(0,0,0,0.15);
+        border-radius: 10px;
+        margin-top: 8px;
+        padding: 8px;
+    }
+    .menu-items.open { display: flex; }
+    .menu-right { margin-left: 0; }
+    .menu-link { width: 100%; }
+}
+
+/* Keyframes */
+@keyframes menuFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* El menú como barra superior, no como “píldora” centrada */
+.app-menu {
+    position: static;     /* evita posicionamientos absolutos/relativos que lo desplacen */
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 0;            /* quita centrado por márgenes */
+    border-radius: 0;     /* barra recta en el header */
+    box-shadow: none;     /* ajusta si quieres sombra ligera */
+    min-height: 56px;     /* altura cómoda de barra */
+}
+
+/* Layout interno de la barra */
+.menu-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Lista de items horizontal */
+.menu-items {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    padding: 8px 0;
+}
+
+/* En móviles se mantiene el toggle */
+@media (max-width: 768px) {
+    .menu-items {
+        display: none;
+    }
+    .menu-items.open {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px 0 12px;
+    }
+}
