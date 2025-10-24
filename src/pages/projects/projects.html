@@ -1,0 +1,87 @@
+<!-- Página de Proyectos -->
+<section class="projects-page container py-4">
+  <h2 class="mb-3">Proyectos</h2>
+  <p class="text-secondary mb-4">Listado temporal con datos de ejemplo.</p>
+
+  <button id="openCreateProjectModal" class="btn btn-primary btn-lg fw-bold shadow-sm mb-3">
+    Crear proyecto
+  </button>
+
+  <!-- Modal estático para crear proyecto -->
+  <div id="createProjectModal" class="modal-custom" hidden>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cp_modal_title">Crear proyecto</h5>
+          <button type="button" class="btn-close" id="closeCreateProjectModal"></button>
+        </div>
+        <!-- Dentro del modal: reorganizo la modal-body y retiro Admin User ID del form -->
+        <form id="createProjectForm">
+          <div class="modal-body">
+            <!-- Detalles del proyecto -->
+            <section class="modal-section mb-4">
+              <h6 class="modal-section-title fw-semibold mb-2">Detalles del proyecto</h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="cp_name" name="name" placeholder="Nombre del proyecto" required />
+                    <label for="cp_name">Nombre del proyecto</label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <textarea class="form-control" id="cp_description" name="description" placeholder="Descripción"></textarea>
+                    <label for="cp_description">Descripción</label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Tareas iniciales -->
+            <section class="modal-section">
+              <h6 class="modal-section-title fw-semibold mb-2">Tareas iniciales</h6>
+
+              <div class="form-floating mb-2">
+                <textarea class="form-control" id="cp_tasks" name="tasks" placeholder="Una tarea por línea" style="height: 81px"></textarea>
+                <label for="cp_tasks">Tareas (una por línea, opcional)</label>
+              </div>
+              <div class="form-text mb-2">Una tarea por línea. Puedes dejar este campo vacío.</div>
+
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <small class="text-muted">Vista previa</small>
+                <span class="badge bg-secondary" id="cp_tasks_count">0</span>
+              </div>
+              <ol id="cp_tasks_preview" class="list-group list-group-numbered"></ol>
+            </section>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="closeCreateProjectModalFooter">Cerrar</button>
+            <button type="submit" class="btn btn-primary" id="cp_submit_btn">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div id="createProjectBackdrop" class="modal-backdrop-custom" hidden></div>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Descripción</th>
+          <th scope="col">Admin</th>
+          <th scope="col">Creado</th>
+          <th scope="col">Actualizado</th>
+          <th scope="col">Tareas</th>
+        </tr>
+      </thead>
+      <tbody id="projectsTableBody">
+        <!-- Filas generadas por projects.js -->
+      </tbody>
+    </table>
+  </div>
+</section>
+<!-- Nota: el comportamiento del modal lo gestiona projects.js -->
