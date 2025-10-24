@@ -1,0 +1,145 @@
+/* Bootstrap vía CDN usando @import para no depender del <head> */
+@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css");
+
+.projects-page h2 { font-weight: 700; }
+.projects-page .table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.projects-page .badge { font-weight: 600; letter-spacing: 0.2px; }
+
+/* Estilos del botón superior "Crear proyecto" */
+.projects-page #openCreateProjectModal {
+  background: linear-gradient(180deg, #0d6efd 0%, #0b5ed7 100%);
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 10px;
+  transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.projects-page #openCreateProjectModal:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(13, 110, 253, 0.35);
+  filter: brightness(1.05);
+}
+.projects-page #openCreateProjectModal:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+}
+
+/* Backdrop más opaco para oscurecer el fondo */
+.modal-backdrop-custom {
+  position: fixed; inset: 0;
+  background: rgba(33, 37, 41, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 1050;
+}
+
+/* Contenedor del modal */
+.modal-custom {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: transparent; z-index: 1055;
+}
+/* Modal más compacto y con scroll interno */
+/* Tamaño, padding y orden del modal */
+.modal-custom .modal-dialog {
+  width: min(560px, 94%);        /* más compacto */
+  margin: 0 auto;
+}
+.modal-custom .modal-content {
+  background-color: #fff;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+.modal-custom .modal-header,
+.modal-custom .modal-footer {
+  padding: 0.9rem 1.25rem;
+  border-color: rgba(0,0,0,0.08);
+}
+.modal-custom .modal-body {
+  padding: 1rem 1.25rem;         /* padding interno uniforme */
+  overflow-y: auto;              /* scroll interno si crece */
+}
+
+/* Secciones y floating inputs organizados */
+.modal-section { margin-bottom: 0.75rem; }
+.modal-section-title { margin-bottom: 0.5rem; }
+.modal-custom .form-floating > .form-control { border-radius: 10px; }
+.modal-custom .form-control {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.modal-custom .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Vista previa de tareas */
+#cp_tasks_preview {
+  height: 160px;               /* alto fijo (antes solo max-height) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  padding: 0;
+  margin: 0;
+}
+
+/* Mejora de scrollbar */
+#cp_tasks_preview::-webkit-scrollbar { width: 8px; }
+#cp_tasks_preview::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.06);
+  border-radius: 10px;
+}
+#cp_tasks_preview::-webkit-scrollbar-thumb {
+  background-color: rgba(13,110,253,0.35);
+  border-radius: 10px;
+}
+#cp_tasks_preview { 
+  scrollbar-width: thin; 
+  scrollbar-color: rgba(13,110,253,0.35) rgba(0,0,0,0.06);
+}
+
+/* Items más compactos dentro de la vista previa */
+#cp_tasks_preview .list-group-item {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+/* Ajuste en pantallas bajas para asegurar que siempre cabe */
+@media (max-height: 700px) {
+  #cp_tasks_preview { height: 47px; }
+}
+.modal-custom .modal-title { font-weight: 700; }
+.modal-custom .btn-close { outline: none; }
+.modal-custom .modal-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 0.9rem 1.2rem;
+}
+
+/* Formulario dentro del modal */
+.modal-custom .form-label { font-weight: 600; }
+.modal-custom .form-control {
+  background-color: #ffffff;
+  border-radius: 10px;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.modal-custom .form-control::placeholder { color: #6c757d; opacity: 0.8; }
+.modal-custom .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Botones del footer */
+.modal-custom .btn-primary,
+.modal-custom .btn-secondary {
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+}

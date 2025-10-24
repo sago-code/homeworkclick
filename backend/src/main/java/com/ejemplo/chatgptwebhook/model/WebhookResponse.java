@@ -8,15 +8,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class WebhookResponse {
     
     @JsonProperty("respuesta")
-    private String respuesta;
+    private final String respuesta;
     
     @JsonProperty("estado")
-    private String estado;
+    private final String estado;
     
     @JsonProperty("usuario")
-    private String usuario;
-
-    public WebhookResponse() {}
+    private final String usuario;
 
     public WebhookResponse(String respuesta, String estado, String usuario) {
         this.respuesta = respuesta;
@@ -28,24 +26,12 @@ public class WebhookResponse {
         return respuesta;
     }
 
-    public void setRespuesta(String respuesta) {
-        this.respuesta = respuesta;
-    }
-
     public String getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
     public String getUsuario() {
         return usuario;
-    }
-
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
     }
 
     @Override

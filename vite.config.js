@@ -6,13 +6,17 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
-      output: {
-        assetFileNames: 'assets/[name].[ext]'
-      }
+      output: { assetFileNames: 'assets/[name].[ext]' }
     }
   },
   server: {
     port: 5173,
-    host: true
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      }
+    }
   }
 })

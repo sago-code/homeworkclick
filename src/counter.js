@@ -1,9 +1,19 @@
 export function setupCounter(element) {
-  let counter = 0
-  const setCounter = (count) => {
-    counter = count
-    element.innerHTML = `count is ${counter}`
-  }
-  element.addEventListener('click', () => setCounter(counter + 1))
-  setCounter(0)
+  // Estado inmutable: representado por un objeto que no se muta directamente
+  let state = { counter: 0 };
+
+  const render = (s) => {
+    element.innerHTML = `count is ${s.counter}`;
+  };
+
+  const setState = (nextState) => {
+    state = { ...state, ...nextState };
+    render(state);
+  };
+
+  element.addEventListener('click', () => {
+    setState({ counter: state.counter + 1 });
+  });
+
+  render(state);
 }

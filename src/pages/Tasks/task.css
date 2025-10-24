@@ -1,0 +1,72 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css");
+
+.tasks-page h2 {
+  font-weight: 700;
+}
+
+.tasks-page .table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.tasks-page .badge {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* Backdrop para oscurecer fondo (mismo que proyectos) */
+.modal-backdrop-custom {
+  position: fixed; inset: 0;
+  background: rgba(33, 37, 41, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 1050;
+}
+
+/* Contenedor del modal centrado (mismo que proyectos) */
+.modal-custom {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  background: transparent; z-index: 1055;
+}
+
+/* Tamaño y estilo del modal */
+.modal-custom .modal-dialog {
+  width: min(560px, 94%);
+  margin: 0 auto;
+}
+.modal-custom .modal-content {
+  background-color: #fff;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+.modal-custom .modal-header,
+.modal-custom .modal-footer {
+  padding: 0.9rem 1.25rem;
+  border-color: rgba(0,0,0,0.08);
+}
+.modal-custom .modal-body {
+  padding: 1rem 1.25rem;
+  overflow-y: auto;
+}
+
+/* Inputs y selects */
+.modal-custom .form-floating > .form-control { border-radius: 10px; }
+.modal-custom .form-control {
+  background-color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.modal-custom .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Botones del footer */
+.modal-custom .btn-primary,
+.modal-custom .btn-secondary {
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+}

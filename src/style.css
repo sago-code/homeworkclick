@@ -11,3 +11,29 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Imágenes laterales visibles y detrás del contenido */
+.bg-side {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    width: auto;
+    object-fit: contain;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.35;
+}
+.bg-left { left: 0; }
+.bg-right { right: 0; }
+
+/* Asegura que el contenido quede por encima */
+.chatbot {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header por encima de las imágenes */
+.app-header {
+    z-index: 1000;
+}

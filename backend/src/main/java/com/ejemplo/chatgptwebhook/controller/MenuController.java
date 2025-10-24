@@ -61,24 +61,27 @@ public class MenuController {
      */
     @PostMapping("/procesar/{optionId}")
     public ResponseEntity<String> procesarOpcionSeleccionada(@PathVariable int optionId, 
-        @RequestParam(required = false) String sessionId) {
-        
+        @RequestParam(required = false) String sessionId,
+        @RequestParam(required = false) Long userId) {
+
         try {
+            String sid = (sessionId != null && !sessionId.isEmpty()) ? sessionId : "default_session";
+            logger.info("📨 procesar/{}, sessionId={}, userId={}", optionId, sid, userId);
+            if (userId != null) {
+                menuService.setAdminUserForSession(sid, userId);
+            } else {
+                logger.warn("⚠️ userId ausente/invalid: se requiere login para persistir en BD");
+            }
+
             String resultado;
-            
             if (sessionId != null && !sessionId.isEmpty()) {
-                // Usar el método procesarOpcion con control de sesión
                 resultado = menuService.procesarOpcionWeb(optionId, sessionId);
             } else {
-                // Usar el método sin sesión específica
                 resultado = menuService.procesarOpcionWeb(optionId);
             }
-            
-            logger.info("Opción {} procesada exitosamente para sesión: {}", optionId, sessionId);
+
             return ResponseEntity.ok(resultado);
-            
         } catch (Exception ex) {
-            logger.error("Error al procesar la opción {} del menú", optionId, ex);
             return ResponseEntity.internalServerError().body("Error al procesar la opción: " + ex.getMessage());
         }
     }
@@ -95,21 +98,26 @@ public class MenuController {
     @PostMapping("/procesar/{optionId}/datos")
     public ResponseEntity<String> procesarOpcionConDatos(@PathVariable int optionId, 
                                                         @RequestBody String datos,
-                                                        @RequestParam(required = false) String sessionId) {
-        
+                                                        @RequestParam(required = false) String sessionId,
+                                                        @RequestParam(required = false) Long userId) {
+
         try {
+            String sid = (sessionId != null && !sessionId.isEmpty()) ? sessionId : "default_session";
+            logger.info("📨 procesar/{}/datos, sessionId={}, userId={}", optionId, sid, userId);
+            if (userId != null) {
+                menuService.setAdminUserForSession(sid, userId);
+            } else {
+                logger.warn("⚠️ userId ausente/invalid: se requiere login para persistir en BD");
+            }
+
             String resultado;
-            
             if (sessionId != null && !sessionId.isEmpty()) {
-                // Usar el método con sesión específica
                 resultado = menuService.procesarOpcionWebConDatosYSesion(optionId, datos, sessionId);
             } else {
-                // Usar el método sin sesión específica (fallback)
                 resultado = menuService.procesarOpcionWebConDatos(optionId, datos);
             }
-           
+
             return ResponseEntity.ok(resultado);
-            
         } catch (Exception ex) {
             return ResponseEntity.internalServerError().body("Error al procesar la opción con datos: " + ex.getMessage());
         }
