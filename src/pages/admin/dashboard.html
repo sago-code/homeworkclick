@@ -1,0 +1,83 @@
+<section class="user-shell">
+  <link rel="stylesheet" href="/src/pages/user/dashboard.css" />
+
+  <header class="user-topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <h1>Mi Panel</h1>
+    </div>
+    <div class="top-actions">
+      <div id="current-identity" class="pill">Cargando…</div>
+      <button class="btn" id="btn-logout-user">Salir</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Col 1: Mis métricas -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Resumen</h3>
+          <p class="card-sub">Tus tareas y avance</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="stats" id="stats-user"></div>
+      </div>
+    </section>
+
+    <!-- Col 2: Mis tareas (Kanban) -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Mis tareas</h3>
+          <p class="card-sub">Solo las tareas asignadas a ti</p>
+        </div>
+        <div class="filters">
+          <label class="filter-label">Proyecto</label>
+          <select id="user-project-filter"></select>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="kanban">
+          <div class="col">
+            <h4>Por hacer</h4>
+            <div id="u-col-todo"></div>
+          </div>
+          <div class="col">
+            <h4>En progreso</h4>
+            <div id="u-col-doing"></div>
+          </div>
+          <div class="col">
+            <h4>Hechas</h4>
+            <div id="u-col-done"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Col 3: Gráficas de avance -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Avance del proyecto</h3>
+          <p class="card-sub">General vs. tu avance</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <div class="chart">
+            <h4>Avance general del proyecto</h4>
+            <div id="chart-project-progress"></div>
+            <div class="chart-legend" id="legend-general"></div>
+          </div>
+          <div class="chart">
+            <h4>Tu avance en el proyecto</h4>
+            <div id="chart-user-progress"></div>
+            <div class="chart-legend" id="legend-user"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</section>
