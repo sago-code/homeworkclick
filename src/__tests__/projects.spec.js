@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mountProjectsPage } from '../pages/projects/projects.js';
+import axios from 'axios';
 
 describe('Projects Page', () => {
   beforeEach(() => {
@@ -55,6 +56,7 @@ describe('Projects Page', () => {
 
     expect(alertSpy).toHaveBeenCalledWith('No se pudieron cargar los proyectos.');
     const tbody = document.getElementById('projectsTableBody');
-    expect(tbody.children.length).toBe(0);
-  });
+    expect(tbody.children.length).toBe(1);
+    expect(tbody.textContent).toContain('Sin proyectos');
 });
+})

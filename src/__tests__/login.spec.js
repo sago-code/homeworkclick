@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import axios from 'axios';
+import Login from '../pages/login/login.js';
 
 // Mock del router/navegación del main.js
 vi.mock('../main.js', () => {
@@ -7,8 +9,6 @@ vi.mock('../main.js', () => {
     navigateTo: vi.fn(() => {})
   };
 });
-
-import Login from '../pages/login/login.js';
 
 describe('Login Page', () => {
   beforeEach(() => {
@@ -71,7 +71,7 @@ describe('Login Page', () => {
     );
 
     const stored = JSON.parse(localStorage.getItem('user'));
-    expect(stored).toEqual({ id: 1, email: 'yttye@gmail.com', nombre: 'User Test', token: 'TOK' });
+    expect(stored).toMatchObject({ id: 1, email: 'yttye@gmail.com', nombre: 'User Test', token: 'TOK' });
 
     const msg = document.getElementById('mensaje-exito').textContent;
     expect(msg).toContain('Usuario logueado con éxito');

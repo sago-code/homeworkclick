@@ -221,8 +221,6 @@ export default class ChatbotApp {
   }
 
   // ============================================
-  // Menú (igual que antes)
-  // ============================================
   async loadMenuOptions() {
     try {
       if (!this.state.menuSessionId) {
