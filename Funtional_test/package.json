@@ -1,0 +1,29 @@
+{
+  "name": "functional-tests",
+  "version": "1.0.0",
+  "description": "Pruebas funcionales con Selenium para HomeworkClick",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:projects": "node --experimental-vm-modules node_modules/jest/bin/jest.js projects.test.js",
+    "test:tasks": "node --experimental-vm-modules node_modules/jest/bin/jest.js tasks.test.js",
+    "test:all": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "clean:screenshots": "node scripts/clean-screenshots.js",
+    "delete:screenshot": "node scripts/delete-screenshot.js"
+  },
+  "keywords": [
+    "selenium",
+    "testing",
+    "functional-tests"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "selenium-webdriver": "^4.15.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0"
+  }
+}
+
