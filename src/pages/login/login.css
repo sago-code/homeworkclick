@@ -54,7 +54,7 @@ body {
     padding: 32px;
     gap: 24px;
     transition: all 0.3s ease-in-out;
-    display: flex !important;
+    display: flex;
     flex-direction: row !important;
 }
 
@@ -218,7 +218,7 @@ body {
         width: 100%;
         height: auto;
         object-fit: contain;
-        display: block;
+        display: none;
         align-self: center;
         justify-self: center;
     }
@@ -231,6 +231,9 @@ body {
         border-radius: 5px;
         background: white;
         color: #333;
+    }
+    .login-form, .register-form {
+        align-items: center;
     }
 }
 
@@ -311,4 +314,25 @@ body {
 /* No toques la visibilidad de los forms por defecto para evitar “desapariciones” */
 .login-form, .register-form {
     transition: none; /* la animación se hace a nivel de .card */
+}
+
+#form-registro{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.container-input{
+    width: 48%;
+}
+
+.container-input input, .container-input div, .container-input span{
+    margin: 0px;
+}
+
+/* En móviles se mantiene el toggle */
+@media (max-width: 640px) {
+    .container-input{
+        width: 100%;
+    }
 }

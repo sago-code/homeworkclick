@@ -123,6 +123,7 @@ export default async function router() {
   
 // Cuando carga la página
 document.addEventListener('DOMContentLoaded', () => {
+  const u = getCurrentUser();
   autoMountMenu('appMenu');
   router();
 });

@@ -7,7 +7,6 @@ import { navigateTo } from '../../main';
 export function mountMenu(rootId = 'appMenu') {
     const root = document.getElementById(rootId);
     if (!root) return false;
-
     root.innerHTML = menuTemplate;
 
     const toggle = root.querySelector('.menu-toggle');
@@ -56,6 +55,10 @@ export function mountMenu(rootId = 'appMenu') {
             toggle?.setAttribute('aria-expanded', 'false');
         }
     });
+    
+    if (!isAuthenticated())  {
+        root.classList.add('desactive');
+    }
 
     return true;
 }
@@ -84,4 +87,13 @@ function setActiveByRoute(root, route) {
         return r && (route.startsWith(r) || (route === '/' && r === '/dashboard'));
     });
     if (match) match.classList.add('active');
+}
+
+export function isAuthenticated() {
+    try {
+        const user = localStorage.getItem('user');
+        return !!user && JSON.parse(user);
+    } catch {
+        return false;
+    }
 }
