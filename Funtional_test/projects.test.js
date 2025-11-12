@@ -22,10 +22,14 @@ export async function runProjectsE2E() {
   const results = { steps: [], screenshots: [] };
 
   try {
-    driver = await (await import('./helpers/setup.js')).createDriver();
-    const { APP_CONFIG, TEST_CREDENTIALS, waitForElement, waitForClickable, takeScreenshot, getTextSafe } =
-      await import('./helpers/setup.js');
+    const setup = await import('./helpers/setup.js');
     const { By } = await import('selenium-webdriver');
+    const {
+      createDriver, closeDriver, waitForElement, waitForClickable,
+      takeScreenshot, getTextSafe, APP_CONFIG, TEST_CREDENTIALS
+    } = setup;
+
+    driver = await createDriver();
 
     // Login
     await driver.get(`${APP_CONFIG.baseUrl}/login`);

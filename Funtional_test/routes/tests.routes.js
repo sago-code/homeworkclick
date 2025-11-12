@@ -1,4 +1,3 @@
-// Simple routes to trigger functional tests via HTTP
 import { runProjectsE2E } from '../projects.test.js';
 import { runTasksE2E } from '../tasks.test.js';
 

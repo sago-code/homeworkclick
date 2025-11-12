@@ -9,7 +9,9 @@
     "test:tasks": "node --experimental-vm-modules node_modules/jest/bin/jest.js tasks.test.js",
     "test:all": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "clean:screenshots": "node scripts/clean-screenshots.js",
-    "delete:screenshot": "node scripts/delete-screenshot.js"
+    "delete:screenshot": "node scripts/delete-screenshot.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "keywords": [
     "selenium",
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.11"
   }
 }
