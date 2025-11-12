@@ -16,6 +16,82 @@ import {
 } from './helpers/setup.js';
 import { By, until } from 'selenium-webdriver';
 
+// Exportable endpoint-friendly runner
+export async function runProjectsE2E() {
+  let driver;
+  const results = { steps: [], screenshots: [] };
+
+  try {
+    driver = await (await import('./helpers/setup.js')).createDriver();
+    const { APP_CONFIG, TEST_CREDENTIALS, waitForElement, waitForClickable, takeScreenshot, getTextSafe } =
+      await import('./helpers/setup.js');
+    const { By } = await import('selenium-webdriver');
+
+    // Login
+    await driver.get(`${APP_CONFIG.baseUrl}/login`);
+    await waitForElement(driver, '#form-login');
+    const emailInput = await driver.findElement(By.id('correo'));
+    await emailInput.clear();
+    await emailInput.sendKeys(TEST_CREDENTIALS.admin.email);
+    const passwordInput = await driver.findElement(By.id('contraseña'));
+    await passwordInput.clear();
+    await passwordInput.sendKeys(TEST_CREDENTIALS.admin.password);
+    try {
+      const roleSelect = await driver.findElement(By.id('role'));
+      await roleSelect.click();
+      const roleOption = await driver.findElement(By.css(`#role option[value="${TEST_CREDENTIALS.admin.role}"]`));
+      await roleOption.click();
+    } catch {}
+    await takeScreenshot(driver, '01_login_formulario_completado');
+    results.screenshots.push('01_login_formulario_completado');
+    const submitButton = await driver.findElement(By.css('#form-login button[type="submit"]'));
+    await submitButton.click();
+    await driver.sleep(2000);
+    await takeScreenshot(driver, '02_login_completado');
+    results.screenshots.push('02_login_completado');
+    results.steps.push('Login completado');
+
+    // Navegación proyectos
+    await driver.get(`${APP_CONFIG.baseUrl}/projects`);
+    const title = await getTextSafe(driver, 'h2');
+    results.steps.push(`Navegado a /projects, título: ${title}`);
+
+    // Abrir modal crear proyecto
+    const createButton = await waitForClickable(driver, '#openCreateProjectModal');
+    await createButton.click();
+    await driver.sleep(500);
+    results.steps.push('Modal crear proyecto abierto');
+
+    // Crear proyecto
+    const nameInput = await driver.findElement(By.id('cp_name'));
+    const descriptionInput = await driver.findElement(By.id('cp_description'));
+    const tasksInput = await driver.findElement(By.id('cp_tasks'));
+    const projectName = `Proyecto Test ${Date.now()}`;
+    await nameInput.clear(); await nameInput.sendKeys(projectName);
+    await descriptionInput.clear(); await descriptionInput.sendKeys('Proyecto generado vía endpoint');
+    await tasksInput.clear(); await tasksInput.sendKeys('Tarea 1\nTarea 2\nTarea 3');
+    await takeScreenshot(driver, '05_formulario_proyecto_completado');
+    results.screenshots.push('05_formulario_proyecto_completado');
+
+    const submitProj = await waitForClickable(driver, '#cp_submit_btn');
+    await submitProj.click();
+    await driver.sleep(2000);
+    const tbody = await driver.findElement(By.css('#projectsTableBody'));
+    const tableText = await tbody.getText();
+    const created = tableText.includes(projectName);
+    results.steps.push(`Proyecto creado y listado: ${created ? 'sí' : 'no'}`);
+
+    return { success: true, createdProjectName: projectName, ...results };
+  } catch (err) {
+    return { success: false, error: err?.message || String(err), ...results };
+  } finally {
+    if (driver) {
+      const { closeDriver } = await import('./helpers/setup.js');
+      await closeDriver(driver);
+    }
+  }
+}
+
 describe('Pruebas funcionales - Proyectos', () => {
   let driver;
 

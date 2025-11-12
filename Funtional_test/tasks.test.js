@@ -503,3 +503,105 @@ describe('Pruebas funcionales - Tareas', () => {
   });
 });
 
+// Exportable endpoint-friendly runner
+export async function runTasksE2E() {
+  let driver;
+  const results = { steps: [], screenshots: [] };
+
+  try {
+    driver = await (await import('./helpers/setup.js')).createDriver();
+    const {
+      APP_CONFIG, TEST_CREDENTIALS, waitForElement, waitForClickable,
+      takeScreenshot, getTextSafe
+    } = await import('./helpers/setup.js');
+    const { By } = await import('selenium-webdriver');
+
+    // Login
+    await driver.get(`${APP_CONFIG.baseUrl}/login`);
+    await waitForElement(driver, '#form-login');
+    const emailInput = await driver.findElement(By.id('correo'));
+    await emailInput.clear();
+    await emailInput.sendKeys(TEST_CREDENTIALS.admin.email);
+    const passwordInput = await driver.findElement(By.id('contraseña'));
+    await passwordInput.clear();
+    await passwordInput.sendKeys(TEST_CREDENTIALS.admin.password);
+    try {
+      const roleSelect = await driver.findElement(By.id('role'));
+      await roleSelect.click();
+      const roleOption = await driver.findElement(By.css(`#role option[value="${TEST_CREDENTIALS.admin.role}"]`));
+      await roleOption.click();
+    } catch {}
+    await takeScreenshot(driver, 'tareas_01_login_formulario_completado');
+    results.screenshots.push('tareas_01_login_formulario_completado');
+    const submitButton = await driver.findElement(By.css('#form-login button[type="submit"]'));
+    await submitButton.click();
+    await driver.sleep(2000);
+    await takeScreenshot(driver, 'tareas_02_login_completado');
+    results.screenshots.push('tareas_02_login_completado');
+    results.steps.push('Login completado');
+
+    // Navegar a /tasks
+    await driver.get(`${APP_CONFIG.baseUrl}/tasks`);
+    const title = await getTextSafe(driver, 'h2');
+    results.steps.push(`Navegado a /tasks, título: ${title}`);
+
+    // Seleccionar proyecto si existe
+    const projectFilter = await driver.findElement(By.id('projectFilter'));
+    const options = await projectFilter.findElements(By.css('option'));
+    if (options.length > 1) {
+      await projectFilter.click();
+      await options[1].click();
+      await driver.sleep(500);
+      results.steps.push('Proyecto seleccionado para tareas');
+    }
+
+    // Abrir modal crear tarea
+    const createButton = await waitForClickable(driver, '#openCreateTaskModal');
+    const isDisabled = await createButton.getAttribute('disabled');
+    if (isDisabled) {
+      results.steps.push('Botón crear tarea deshabilitado, no hay proyectos');
+      return { success: false, error: 'No hay proyectos para crear tareas', ...results };
+    }
+    await createButton.click();
+    await driver.sleep(500);
+
+    // Completar y enviar tarea
+    await waitForElement(driver, '#ct_title');
+    const taskTitle = `Tarea Test ${Date.now()}`;
+    const titleInput = await driver.findElement(By.id('ct_title'));
+    await titleInput.clear(); await titleInput.sendKeys(taskTitle);
+    const descriptionInput = await driver.findElement(By.id('ct_description'));
+    await descriptionInput.clear(); await descriptionInput.sendKeys('Descripción creada vía endpoint');
+    const statusSelect = await driver.findElement(By.id('ct_status'));
+    await statusSelect.click();
+    const statusOption = await driver.findElement(By.css('#ct_status option[value="en_progreso"]'));
+    await statusOption.click();
+    const prioritySelect = await driver.findElement(By.id('ct_priority'));
+    await prioritySelect.click();
+    const priorityOption = await driver.findElement(By.css('#ct_priority option[value="HIGH"]'));
+    await priorityOption.click();
+    const dueDateInput = await driver.findElement(By.id('ct_dueDate'));
+    await dueDateInput.clear(); await dueDateInput.sendKeys('2025-11-11');
+    await takeScreenshot(driver, 'tareas_07_formulario_tarea_completado');
+    results.screenshots.push('tareas_07_formulario_tarea_completado');
+
+    const submitTask = await waitForClickable(driver, '#ct_submit_btn');
+    await submitTask.click();
+    await driver.sleep(3000);
+
+    const tbody = await driver.findElement(By.css('#tasksTableBody'));
+    const tableText = await tbody.getText();
+    const created = tableText.includes(taskTitle);
+    results.steps.push(`Tarea creada y listada: ${created ? 'sí' : 'no'}`);
+
+    return { success: true, createdTaskTitle: taskTitle, ...results };
+  } catch (err) {
+    return { success: false, error: err?.message || String(err), ...results };
+  } finally {
+    if (driver) {
+      const { closeDriver } = await import('./helpers/setup.js');
+      await closeDriver(driver);
+    }
+  }
+}
+
